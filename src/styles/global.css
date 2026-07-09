@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --color-primary: #1B4F8C;      /* navy blue - dari header text & button */
+  --color-secondary: #F2B705;    /* gold - dari badge KKA */
+  --color-accent: #E11D48;       /* merah - buat aksen/notif, sesuai garis pink di form */
+  --color-neutral-white: #ffffff;
+  --color-neutral-gray: #f8fafc;
+  --color-neutral-dark: #1e293b;
+}

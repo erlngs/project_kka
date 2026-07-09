@@ -1,0 +1,85 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { prisma } from '../../lib/prisma';
+
+export const prerender = false;
+
+const [totalWilayah, totalPendaftaran, pendaftaranPending, totalHalaman, totalGelombang, recentPendaftaran] = await Promise.all([
+  prisma.wilayah.count(),
+  prisma.pendaftaran.count(),
+  prisma.pendaftaran.count({ where: { status: 'pending' } }),
+  prisma.page.count(),
+  prisma.gelombang.count(),
+  prisma.pendaftaran.findMany({
+    take: 5,
+    orderBy: { createdAt: 'desc' },
+    include: { wilayah: true, gelombang: true },
+  }),
+]);
+
+const cards = [
+  { label: 'Total Wilayah', value: totalWilayah, color: 'bg-primary/10 text-primary' },
+  { label: 'Total Pendaftaran', value: totalPendaftaran, color: 'bg-secondary/10 text-secondary' },
+  { label: 'Pendaftaran Pending', value: pendaftaranPending, color: 'bg-amber-100 text-amber-600' },
+  { label: 'Total Halaman', value: totalHalaman, color: 'bg-accent/10 text-accent' },
+  { label: 'Gelombang Aktif', value: totalGelombang, color: 'bg-purple-100 text-purple-600' },
+];
+
+const statusColor: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-700',
+  menunggu_verifikasi: 'bg-blue-100 text-blue-700',
+  lunas: 'bg-emerald-100 text-emerald-700',
+  ditolak: 'bg-red-100 text-red-700',
+  dibatalkan: 'bg-neutral-200 text-neutral-dark/60',
+};
+---
+
+<AdminLayout title="Dashboard">
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    {cards.map((c) => (
+      <div class="bg-neutral-white rounded-xl p-5 shadow-sm">
+        <div class={`w-9 h-9 rounded-lg ${c.color} flex items-center justify-center font-heading font-bold text-sm mb-3`}>
+          {c.value}
+        </div>
+        <p class="text-sm text-neutral-dark/60">{c.label}</p>
+      </div>
+    ))}
+  </div>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm">
+    <div class="px-5 py-4 border-b border-neutral-gray">
+      <h2 class="font-heading font-semibold text-neutral-dark">Pendaftaran Terbaru</h2>
+    </div>
+
+    {recentPendaftaran.length === 0 ? (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada data pendaftaran.</p>
+    ) : (
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+            <th class="px-5 py-3 font-medium">Nama Siswa</th>
+            <th class="px-5 py-3 font-medium">Wilayah</th>
+            <th class="px-5 py-3 font-medium">Gelombang</th>
+            <th class="px-5 py-3 font-medium">Jenjang</th>
+            <th class="px-5 py-3 font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recentPendaftaran.map((p) => (
+            <tr class="border-b border-neutral-gray last:border-0">
+              <td class="px-5 py-3 text-neutral-dark">{p.namaSiswa}</td>
+              <td class="px-5 py-3 text-neutral-dark/70">{p.wilayah?.nama ?? '-'}</td>
+              <td class="px-5 py-3 text-neutral-dark/70">{p.gelombang?.nama ?? '-'}</td>
+              <td class="px-5 py-3 text-neutral-dark/70">{p.jenjang ?? '-'}</td>
+              <td class="px-5 py-3">
+                <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColor[p.status] ?? 'bg-neutral-gray text-neutral-dark/60'}`}>
+                  {p.status}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+</AdminLayout>

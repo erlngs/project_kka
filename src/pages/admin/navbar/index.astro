@@ -1,0 +1,191 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } });
+---
+
+<AdminLayout title="Navbar">
+  <div class="flex justify-between items-center mb-5">
+    <p class="text-sm text-neutral-dark/60">Atur menu yang tampil di navbar website. Urutan sesuai kolom "Urutan".</p>
+    <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
+      + Tambah Menu
+    </button>
+  </div>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+          <th class="px-5 py-3 font-medium">Urutan</th>
+          <th class="px-5 py-3 font-medium">Label</th>
+          <th class="px-5 py-3 font-medium">Tipe</th>
+          <th class="px-5 py-3 font-medium">Target</th>
+          <th class="px-5 py-3 font-medium">Status</th>
+          <th class="px-5 py-3 font-medium text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {menuList.map((m) => (
+          <tr class="border-b border-neutral-gray last:border-0">
+            <td class="px-5 py-3 text-neutral-dark/70">{m.orderIndex}</td>
+            <td class="px-5 py-3 text-neutral-dark">{m.label}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{m.linkType}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{m.target}</td>
+            <td class="px-5 py-3">
+              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${m.isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/60"}`}>
+                {m.isActive ? "Aktif" : "Nonaktif"}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <button
+                class="btn-edit text-primary text-xs font-medium mr-3"
+                data-id={m.id}
+                data-label={m.label}
+                data-type={m.linkType}
+                data-target={m.target}
+                data-order={m.orderIndex}
+                data-active={String(m.isActive)}
+              >Edit</button>
+              <button class="btn-delete text-red-500 text-xs font-medium" data-id={m.id}>Hapus</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {menuList.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada menu navbar.</p>
+    )}
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div class="bg-neutral-white rounded-xl w-full max-w-md p-6">
+      <h2 id="modal-title" class="font-heading font-semibold text-lg text-neutral-dark mb-4">Tambah Menu</h2>
+      <form id="form-menu" class="flex flex-col gap-3">
+        <input type="hidden" id="f-id" />
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Label</label>
+          <input id="f-label" required placeholder="Tentang Kami" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Tipe Link</label>
+          <select id="f-type" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm">
+            <option value="internal_page">Halaman Internal (slug)</option>
+            <option value="external_url">URL Luar</option>
+            <option value="anchor">Anchor (#section)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Target</label>
+          <input id="f-target" required placeholder="tentang-kami (tanpa slash di depan)" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Urutan</label>
+          <input id="f-order" type="number" value="0" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <label class="flex items-center gap-2 text-sm text-neutral-dark">
+          <input id="f-active" type="checkbox" checked />
+          Aktif
+        </label>
+
+        <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
+
+        <div class="flex justify-end gap-2 mt-2">
+          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/60 hover:bg-neutral-gray rounded-lg">Batal</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-primary text-neutral-white rounded-lg hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const modal = document.getElementById("modal") as HTMLDivElement;
+  const modalTitle = document.getElementById("modal-title") as HTMLHeadingElement;
+  const form = document.getElementById("form-menu") as HTMLFormElement;
+  const errorBox = document.getElementById("form-error") as HTMLDivElement;
+
+  const fId = document.getElementById("f-id") as HTMLInputElement;
+  const fLabel = document.getElementById("f-label") as HTMLInputElement;
+  const fType = document.getElementById("f-type") as HTMLSelectElement;
+  const fTarget = document.getElementById("f-target") as HTMLInputElement;
+  const fOrder = document.getElementById("f-order") as HTMLInputElement;
+  const fActive = document.getElementById("f-active") as HTMLInputElement;
+
+  function openModal(isEdit = false) {
+    errorBox.classList.add("hidden");
+    modalTitle.textContent = isEdit ? "Edit Menu" : "Tambah Menu";
+    modal.classList.remove("hidden");
+  }
+
+  document.getElementById("btn-add")?.addEventListener("click", () => {
+    fId.value = "";
+    fLabel.value = "";
+    fType.value = "internal_page";
+    fTarget.value = "";
+    fOrder.value = "0";
+    fActive.checked = true;
+    openModal(false);
+  });
+
+  document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
+
+  document.querySelectorAll(".btn-edit").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const el = btn as HTMLButtonElement;
+      fId.value = el.dataset.id || "";
+      fLabel.value = el.dataset.label || "";
+      fType.value = el.dataset.type || "internal_page";
+      fTarget.value = el.dataset.target || "";
+      fOrder.value = el.dataset.order || "0";
+      fActive.checked = el.dataset.active === "true";
+      openModal(true);
+    });
+  });
+
+  document.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Yakin hapus menu ini?")) return;
+      const id = (btn as HTMLButtonElement).dataset.id;
+      const res = await fetch(`/api/admin/navbar/${id}`, { method: "DELETE" });
+      if (res.ok) location.reload();
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+
+    const payload = {
+      label: fLabel.value,
+      linkType: fType.value,
+      target: fTarget.value,
+      orderIndex: Number(fOrder.value),
+      isActive: fActive.checked,
+    };
+
+    const isEdit = !!fId.value;
+    const url = isEdit ? `/api/admin/navbar/${fId.value}` : "/api/admin/navbar";
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        errorBox.textContent = data.message || "Gagal menyimpan data";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+      location.reload();
+    } catch {
+      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.classList.remove("hidden");
+    }
+  });
+</script>
