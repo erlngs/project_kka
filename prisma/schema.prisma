@@ -130,13 +130,17 @@ model SiteSetting {
 
 model Setting {
   id            String  @id @default(uuid())
-  key           String  @unique  // misal: "footer"
-  
+  key           String  @unique
+
   footerText    String?
   footerLogo    String?
   whatsapp      String?
   email         String?
   copyright     String?
+
+  bankNama      String?  @map("bank_nama")
+  bankNorek     String?  @map("bank_norek")
+  bankAtasNama  String?  @map("bank_atas_nama")
 
   updatedAt     DateTime @updatedAt
 

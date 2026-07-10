@@ -1,0 +1,63 @@
+<div id="pending-invoice-banner" class="hidden bg-amber-50 border-b border-amber-200">
+  <div class="max-w-6xl mx-auto px-6 py-2.5 flex items-center justify-between gap-3 text-sm">
+    <div class="flex items-center gap-2 text-amber-800">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="shrink-0">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+      </svg>
+      <span>Kamu punya pendaftaran yang belum selesai dibayar.</span>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <a id="banner-invoice-link" href="#" class="text-amber-800 font-medium underline">Lanjutkan Pembayaran</a>
+      <button id="banner-dismiss" class="text-amber-600 hover:text-amber-800">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = "kka_last_invoice";
+  const DISMISS_KEY = "kka_banner_dismissed";
+
+  async function checkPendingInvoice() {
+    const code = localStorage.getItem(STORAGE_KEY);
+    if (!code) return;
+
+    // Kalau user udah dismiss banner untuk kode invoice ini, jangan tampilkan lagi
+    if (sessionStorage.getItem(DISMISS_KEY) === code) return;
+
+    try {
+      const res = await fetch(`/api/public/cek-status?code=${encodeURIComponent(code)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Kalau statusnya udah selesai (lunas/ditolak dengan alasan final), hapus dari localStorage
+      if (data.status === "terverifikasi") {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+
+      // Tampilkan banner kalau masih menunggu pembayaran / verifikasi / ditolak (perlu upload ulang)
+      if (["menunggu_pembayaran", "ditolak"].includes(data.status)) {
+        const banner = document.getElementById("pending-invoice-banner");
+        const link = document.getElementById("banner-invoice-link") as HTMLAnchorElement;
+        if (banner && link) {
+          link.href = `/invoice/${code}`;
+          banner.classList.remove("hidden");
+        }
+      }
+    } catch {
+      // diam aja kalau gagal, gak penting untuk fitur ini
+    }
+  }
+
+  document.getElementById("banner-dismiss")?.addEventListener("click", () => {
+    const code = localStorage.getItem(STORAGE_KEY);
+    if (code) sessionStorage.setItem(DISMISS_KEY, code);
+    document.getElementById("pending-invoice-banner")?.classList.add("hidden");
+  });
+
+  checkPendingInvoice();
+</script>

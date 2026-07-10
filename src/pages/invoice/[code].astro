@@ -17,6 +17,10 @@ const invoice = await prisma.invoice.findUnique({
 
 if (!invoice) return new Response(null, { status: 404 });
 
+const rekening = invoice.status === "menunggu_pembayaran" || invoice.status === "ditolak"
+  ? await prisma.setting.findUnique({ where: { key: "rekening" } })
+  : null;
+
 function formatRupiah(n: number) {
   return new Intl.NumberFormat("id-ID", { 
     style: "currency", 
@@ -103,6 +107,26 @@ function formatRupiah(n: number) {
       </div>
     </div>
 
+    {
+      rekening && (rekening.bankNama || rekening.bankNorek) && (
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+          <p class="text-sm font-medium text-neutral-dark mb-2">Transfer ke rekening berikut:</p>
+          <div class="flex justify-between text-sm">
+            <span class="text-neutral-dark/60">Bank</span>
+            <span class="text-neutral-dark font-medium">{rekening.bankNama}</span>
+          </div>
+          <div class="flex justify-between text-sm mt-1">
+            <span class="text-neutral-dark/60">No. Rekening</span>
+            <span class="text-neutral-dark font-bold">{rekening.bankNorek}</span>
+          </div>
+          <div class="flex justify-between text-sm mt-1">
+            <span class="text-neutral-dark/60">Atas Nama</span>
+            <span class="text-neutral-dark font-medium">{rekening.bankAtasNama}</span>
+          </div>
+        </div>
+      )
+    }
+
     <!-- Conditional Content -->
     {
       invoice.status === "menunggu_pembayaran" && (
@@ -160,6 +184,10 @@ function formatRupiah(n: number) {
 </PublicLayout>
 
 <script define:vars={{ invoiceCode: invoice.invoiceCode }}>
+  // Simpan kode invoice biar bisa diingatkan lagi kalau belum selesai bayar
+if (invoiceCode) {
+  localStorage.setItem("kka_last_invoice", invoiceCode);
+}
   const btnCopy = document.getElementById("btn-copy-code");
 
   btnCopy?.addEventListener("click", async () => {

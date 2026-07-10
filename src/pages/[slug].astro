@@ -16,7 +16,8 @@ const page = await prisma.page.findUnique({
 });
 
 if (!page || !page.isPublished) {
-  return new Response(null, { status: 404 });
+  Astro.response.status = 404;
+  throw new Error("Page not found");
 }
 
 const cardIcons: Record<string, string> = {
@@ -67,10 +68,14 @@ const cardIcons: Record<string, string> = {
 
       switch (block.blockType) {
         case "heading":
-          return <h2 class="font-heading text-2xl font-bold mb-6">{c.text}</h2>;
+          return (
+            <h2 class="font-heading text-2xl font-bold mb-6 card-description" set:html={c.text} />
+          );
 
         case "paragraph":
-          return <p class="text-neutral-dark/80 mb-6 leading-relaxed whitespace-pre-line">{c.text}</p>;
+          return (
+            <div class="text-neutral-dark/80 mb-6 leading-relaxed card-description" set:html={c.text} />
+          );
 
         case "image":
           return (
@@ -96,8 +101,8 @@ const cardIcons: Record<string, string> = {
         case "testimonial":
           return (
             <blockquote class="bg-neutral-gray rounded-2xl p-6 mb-8 italic">
-              "{c.message}"
-              <footer class="mt-4 text-sm font-medium">
+              <div class="card-description" set:html={c.message} />
+              <footer class="mt-4 text-sm font-medium not-italic">
                 — {c.name}{c.role ? `, ${c.role}` : ""}
               </footer>
             </blockquote>
@@ -122,16 +127,16 @@ const cardIcons: Record<string, string> = {
               <div class="w-16 h-1 bg-primary mx-auto mb-10"></div>
               <div class={`grid gap-6 text-left ${(c.items?.length || 0) > 2 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
                 {(c.items || []).map((item: any) => (
-  <div class="group bg-white rounded-2xl shadow-md border border-neutral-100 p-8 transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/20">
-    {item.icon && cardIcons[item.icon] && (
-      <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-2xl mx-auto transition-transform duration-300 group-hover:scale-110">
-        {cardIcons[item.icon]}
-      </div>
-    )}
-    <h3 class="font-heading text-xl font-bold mb-3 text-center">{item.title}</h3>
-    <div class="text-neutral-dark/70 leading-relaxed text-left card-description" set:html={item.description} />
-  </div>
-))}
+                  <div class="group bg-white rounded-2xl shadow-md border border-neutral-100 p-8 transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/20">
+                    {item.icon && cardIcons[item.icon] && (
+                      <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-2xl mx-auto transition-transform duration-300 group-hover:scale-110">
+                        {cardIcons[item.icon]}
+                      </div>
+                    )}
+                    <h3 class="font-heading text-xl font-bold mb-3 text-center">{item.title}</h3>
+                    <div class="text-neutral-dark/70 leading-relaxed text-left card-description" set:html={item.description} />
+                  </div>
+                ))}
               </div>
             </section>
           );
@@ -151,15 +156,16 @@ const cardIcons: Record<string, string> = {
   .ql-size-large { font-size: 1.5em; }
   .ql-size-huge { font-size: 2.5em; }
 
-  /* reset list style yang dihapus Tailwind preflight */
-  .ql-editor ol,
-  [set\:html] ol {
+  /* reset list style yang dihapus Tailwind preflight, khusus konten dari rich text editor */
+  .card-description ol {
     list-style: decimal;
     padding-left: 1.5em;
   }
-  .ql-editor ul,
-  [set\:html] ul {
+  .card-description ul {
     list-style: disc;
     padding-left: 1.5em;
+  }
+  .card-description p:last-child {
+    margin-bottom: 0;
   }
 </style>

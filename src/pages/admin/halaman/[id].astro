@@ -14,7 +14,7 @@ if (!page) return Astro.redirect("/admin/halaman");
 ---
 
 <AdminLayout title={`Kelola: ${page.title}`}>
-  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" is:inline />
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
 
   <div class="flex justify-between items-center mb-5">
     <p class="text-sm text-neutral-dark/60">Atur isi halaman <b>{page.title}</b> — tambah, edit, hapus, atur urutan blok.</p>
@@ -72,14 +72,14 @@ if (!page) return Astro.redirect("/admin/halaman");
         <div id="fields-heading" class="field-group flex flex-col gap-3">
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">Teks Heading</label>
-            <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="text" />
+            <div class="f-rich-input bg-white rounded border border-neutral-200" data-key="text"></div>
           </div>
         </div>
 
         <div id="fields-paragraph" class="field-group hidden flex-col gap-3">
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">Isi Paragraf</label>
-            <textarea rows="4" class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="text"></textarea>
+            <div class="f-rich-input bg-white rounded border border-neutral-200" data-key="text"></div>
           </div>
         </div>
 
@@ -118,7 +118,7 @@ if (!page) return Astro.redirect("/admin/halaman");
           </div>
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">Pesan</label>
-            <textarea rows="3" class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="message"></textarea>
+            <div class="f-rich-input bg-white rounded border border-neutral-200" data-key="message"></div>
           </div>
         </div>
 
@@ -126,6 +126,7 @@ if (!page) return Astro.redirect("/admin/halaman");
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">Label Tombol</label>
             <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="label" />
+            <p class="text-xs text-neutral-dark/50 mt-1">Teks polos saja — tombol tidak mendukung format tebal/miring/warna.</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">URL Tujuan</label>
@@ -171,6 +172,23 @@ if (!page) return Astro.redirect("/admin/halaman");
   const blockIdInput = document.getElementById("f-block-id");
   const cardsItemsContainer = document.getElementById("cards-items");
 
+  const RICH_TOOLBAR = [
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    [{ color: [] }],
+    [{ size: ["small", false, "large", "huge"] }],
+  ];
+
+  // ---- Init semua field rich text statis (heading, paragraph, testimonial) ----
+  document.querySelectorAll(".f-rich-input").forEach((el) => {
+    const quill = new Quill(el, {
+      theme: "snow",
+      modules: { toolbar: RICH_TOOLBAR },
+    });
+    el._quill = quill;
+  });
+
   function showFieldsFor(type) {
     document.querySelectorAll(".field-group").forEach((el) => el.classList.add("hidden"));
     document.getElementById(`fields-${type}`)?.classList.remove("hidden");
@@ -178,6 +196,9 @@ if (!page) return Astro.redirect("/admin/halaman");
 
   function clearFields() {
     document.querySelectorAll(".f-input").forEach((el) => (el.value = ""));
+    document.querySelectorAll(".f-rich-input").forEach((el) => {
+      if (el._quill) el._quill.root.innerHTML = "";
+    });
     document.getElementById("preview-image")?.classList.add("hidden");
     cardsItemsContainer.innerHTML = "";
   }
@@ -217,21 +238,12 @@ if (!page) return Astro.redirect("/admin/halaman");
       div.remove();
     });
 
-    // Append dulu ke container supaya Quill bisa attach dengan benar
     cardsItemsContainer.appendChild(div);
 
     const editorContainer = div.querySelector(".quill-editor-container");
     const quill = new Quill(editorContainer, {
       theme: "snow",
-      modules: {
-  toolbar: [
-    ["bold", "italic", "underline"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-    [{ color: [] }],
-    [{ size: ["small", false, "large", "huge"] }],
-  ],
-},
+      modules: { toolbar: RICH_TOOLBAR },
     });
 
     if (item.description) {
@@ -274,6 +286,11 @@ if (!page) return Astro.redirect("/admin/halaman");
       document.querySelectorAll(`#fields-${type} .f-input`).forEach((input) => {
         const key = input.dataset.key;
         input.value = key === "images" ? (content.images || []).map((i) => i.url).join(", ") : (content[key] ?? "");
+      });
+
+      document.querySelectorAll(`#fields-${type} .f-rich-input`).forEach((el) => {
+        const key = el.dataset.key;
+        if (el._quill) el._quill.root.innerHTML = content[key] || "";
       });
 
       if (type === "image" && content.image_url) {
@@ -345,6 +362,11 @@ if (!page) return Astro.redirect("/admin/halaman");
       } else {
         content[key] = input.value;
       }
+    });
+
+    document.querySelectorAll(`#fields-${type} .f-rich-input`).forEach((el) => {
+      const key = el.dataset.key;
+      if (el._quill) content[key] = el._quill.root.innerHTML;
     });
 
     if (type === "cards") {
