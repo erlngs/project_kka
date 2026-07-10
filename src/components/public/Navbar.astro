@@ -10,25 +10,53 @@ const menu = await prisma.navMenu.findMany({
     orderIndex: "asc",
   },
 });
+
+// Ambil path halaman saat ini
+const currentPath = Astro.url.pathname;
 ---
 
 <header class="bg-neutral-white shadow-sm sticky top-0 z-30">
   <nav class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    
     <!-- Logo -->
-    <a href="/" class="font-heading font-bold text-lg text-neutral-dark">
-      KKA <span class="text-secondary">Kediri</span>
+    <a href="/" class="flex items-center gap-3">
+      <img 
+        src="/Logo.png" 
+        alt="KKA Kediri Logo" 
+        class="h-9 w-auto"
+      >
+      <div class="font-heading font-bold text-lg text-neutral-dark">
+        KKA <span class="text-secondary">Kediri</span>
+      </div>
     </a>
 
     <!-- Desktop Menu -->
     <div class="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-dark">
-      {menu.map((item) => (
-        <a
-          href={item.linkType === "internal_page" ? `/${item.target}` : item.target}
-          class="hover:text-primary transition-colors"
-        >
-          {item.label}
-        </a>
-      ))}
+      {menu.map((item) => {
+        const href = item.linkType === "internal_page" ? `/${item.target}` : item.target;
+        const isActive = currentPath === href || (currentPath.startsWith(href) && href !== "/");
+        
+        return (
+          <a
+            href={href}
+            class={`relative py-1 transition-colors hover:text-primary ${
+              isActive 
+                ? 'text-primary after:absolute after:bottom-[-2px] after:left-0 after:h-[3px] after:w-full after:bg-blue-600 after:rounded' 
+                : ''
+            }`}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+
+      <!-- Tombol Cek Status & Daftar -->
+      <a
+        href="/cek-status"
+        class="bg-secondary text-neutral-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity ml-4"
+      >
+        Cek Status Pendaftaran
+      </a>
 
       <a
         href="/daftar"
@@ -45,41 +73,31 @@ const menu = await prisma.navMenu.findMany({
       type="button"
       aria-label="Toggle Menu"
     >
-      <svg
-        width="24"
-        height="24"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M4 6h16M4 12h16M4 18h16"
-        />
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
   </nav>
 
   <!-- Mobile Menu -->
-  <div
-    id="mobile-menu"
-    class="hidden md:hidden border-t border-neutral-gray px-6 py-4 flex flex-col gap-3 text-sm font-medium text-neutral-dark"
-  >
-    {menu.map((item) => (
-      <a
-        href={item.linkType === "internal_page" ? `/${item.target}` : item.target}
-        class="hover:text-primary transition-colors"
-      >
-        {item.label}
-      </a>
-    ))}
-
-    <a
-      href="/daftar"
-      class="bg-primary text-neutral-white px-4 py-2 rounded-lg text-center hover:opacity-90 transition-opacity"
-    >
+  <div id="mobile-menu" class="hidden md:hidden border-t border-neutral-gray px-6 py-4 flex flex-col gap-3 text-sm font-medium text-neutral-dark">
+    {menu.map((item) => {
+      const href = item.linkType === "internal_page" ? `/${item.target}` : item.target;
+      const isActive = currentPath === href || (currentPath.startsWith(href) && href !== "/");
+      
+      return (
+        <a
+          href={href}
+          class={`py-2 ${isActive ? 'text-primary font-medium' : ''}`}
+        >
+          {item.label}
+        </a>
+      );
+    })}
+    <a href="/cek-status" class="bg-primary text-neutral-white px-4 py-3 rounded-lg text-center mt-4">
+      Cek Status
+    </a>
+    <a href="/daftar" class="bg-primary text-neutral-white px-4 py-3 rounded-lg text-center">
       Daftar Sekarang
     </a>
   </div>

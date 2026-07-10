@@ -1,0 +1,177 @@
+---
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import { prisma } from "../../lib/prisma";
+
+export const prerender = false;
+
+const today = new Date();
+const gelombangAktif = await prisma.gelombang.findFirst({
+  where: { isActive: true, tanggalMulai: { lte: today }, tanggalSelesai: { gte: today } },
+  include: { biaya: true },
+});
+
+const wilayahList = await prisma.wilayah.findMany({ where: { isActive: true }, orderBy: { orderIndex: "asc" } });
+
+function formatRupiah(n: number) {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
+}
+
+const biayaMap: Record<string, number> = {};
+gelombangAktif?.biaya.forEach((b) => (biayaMap[b.jenjang] = Number(b.harga)));
+---
+
+<PublicLayout title="Pendaftaran">
+  <div class="max-w-2xl mx-auto px-6 py-12">
+    <h1 class="font-heading text-2xl font-bold text-neutral-dark mb-2">Form Pendaftaran KKA 2026</h1>
+    <p class="text-sm text-neutral-dark/60 mb-8">Isi data dengan lengkap dan benar sesuai identitas siswa.</p>
+
+    {!gelombangAktif ? (
+      <div class="bg-amber-50 border border-amber-200 text-amber-700 rounded-xl p-6 text-center">
+        <p class="font-medium">Pendaftaran belum dibuka atau sudah ditutup saat ini.</p>
+        <p class="text-sm mt-1">Silakan cek kembali informasi gelombang pendaftaran terbaru.</p>
+      </div>
+    ) : (
+      <>
+        <div class="bg-primary/5 border border-primary/20 rounded-xl px-5 py-3 mb-6 text-sm text-primary font-medium">
+          Gelombang aktif: {gelombangAktif.nama}
+        </div>
+
+        <form id="form-daftar" class="flex flex-col gap-4 bg-neutral-white rounded-xl shadow-sm p-6">
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1.5">Nama Siswa</label>
+            <input id="f-nama" required placeholder="Masukkan Nama Lengkap" class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Nomor NISN</label>
+              <input id="f-nisn" required maxlength="10" placeholder="Masukkan 10 Angka NISN" class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Nomor Whatsapp Aktif</label>
+              <input id="f-wa" required placeholder="Cth: 081234567890" class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Gender</label>
+              <select id="f-gender" required class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm">
+                <option value="">-- Pilih Gender --</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Wilayah</label>
+              <select id="f-wilayah" required class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm">
+                <option value="">-- Pilih Wilayah --</option>
+                {wilayahList.map((w) => <option value={w.id}>{w.nama}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Kecamatan</label>
+              <select id="f-kecamatan" required class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm">
+                <option value="">-- Pilih Kecamatan --</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Jenjang</label>
+              <select id="f-jenjang" required class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm">
+                <option value="">-- Pilih Jenjang --</option>
+                <option value="SD_MI">SD/MI {biayaMap.SD_MI ? `(${formatRupiah(biayaMap.SD_MI)})` : ""}</option>
+                <option value="SMP_MTS">SMP/MTs {biayaMap.SMP_MTS ? `(${formatRupiah(biayaMap.SMP_MTS)})` : ""}</option>
+                <option value="SMA_MA_SMK">SMA/MA/SMK {biayaMap.SMA_MA_SMK ? `(${formatRupiah(biayaMap.SMA_MA_SMK)})` : ""}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Kelas</label>
+              <input id="f-kelas" placeholder="Cth: VI" class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-dark mb-1.5">Asal Sekolah</label>
+              <input id="f-sekolah" required placeholder="Nama sekolah" class="w-full px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm" />
+            </div>
+          </div>
+
+          <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-4 py-2.5"></div>
+
+          <button type="submit" id="submit-btn" class="mt-2 bg-primary text-neutral-white font-heading font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60">
+            Daftar Sekarang
+          </button>
+        </form>
+      </>
+    )}
+  </div>
+</PublicLayout>
+
+<script>
+  const wilayahSelect = document.getElementById("f-wilayah") as HTMLSelectElement | null;
+  const kecamatanSelect = document.getElementById("f-kecamatan") as HTMLSelectElement | null;
+
+  wilayahSelect?.addEventListener("change", async () => {
+    const wilayahId = wilayahSelect.value;
+    kecamatanSelect!.innerHTML = '<option value="">Memuat...</option>';
+    if (!wilayahId) {
+      kecamatanSelect!.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+      return;
+    }
+    const res = await fetch(`/api/public/kecamatan?wilayahId=${wilayahId}`);
+    const data = await res.json();
+    kecamatanSelect!.innerHTML = '<option value="">-- Pilih Kecamatan --</option>' +
+      data.map((k: any) => `<option value="${k.id}">${k.nama}</option>`).join("");
+  });
+
+  const form = document.getElementById("form-daftar") as HTMLFormElement | null;
+  const errorBox = document.getElementById("form-error") as HTMLDivElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Memproses...";
+
+    const payload = {
+      namaSiswa: (document.getElementById("f-nama") as HTMLInputElement).value,
+      nisn: (document.getElementById("f-nisn") as HTMLInputElement).value,
+      noWhatsapp: (document.getElementById("f-wa") as HTMLInputElement).value,
+      gender: (document.getElementById("f-gender") as HTMLSelectElement).value,
+      wilayahId: (document.getElementById("f-wilayah") as HTMLSelectElement).value,
+      kecamatanId: (document.getElementById("f-kecamatan") as HTMLSelectElement).value,
+      jenjang: (document.getElementById("f-jenjang") as HTMLSelectElement).value,
+      kelas: (document.getElementById("f-kelas") as HTMLInputElement).value,
+      sekolahManual: (document.getElementById("f-sekolah") as HTMLInputElement).value,
+    };
+
+    try {
+      const res = await fetch("/api/pendaftaran", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorBox.textContent = data.message || "Gagal mendaftar, coba lagi.";
+        errorBox.classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Daftar Sekarang";
+        return;
+      }
+
+      window.location.href = `/invoice/${data.invoiceCode}`;
+    } catch {
+      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Daftar Sekarang";
+    }
+  });
+</script>

@@ -10,3 +10,9 @@
   --color-neutral-gray: #f8fafc;
   --color-neutral-dark: #1e293b;
 }
+
+button,
+a,
+[role="button"] {
+  cursor: pointer;
+}

@@ -1,0 +1,45 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const pesanList = await prisma.pesan.findMany({ orderBy: { createdAt: "desc" } });
+---
+
+<AdminLayout title="Pesan">
+  <p class="text-sm text-neutral-dark/60 mb-5">Pesan masuk dari form kontak website.</p>
+
+  <div class="flex flex-col gap-3">
+    {pesanList.map((p) => (
+      <div class={`bg-neutral-white rounded-xl shadow-sm p-5 ${!p.isRead ? "border-l-4 border-primary" : ""}`} data-id={p.id}>
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <p class="font-medium text-neutral-dark">{p.nama}</p>
+            <p class="text-xs text-neutral-dark/50">{p.email} {p.telepon ? `• ${p.telepon}` : ""}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-neutral-dark/40">{new Date(p.createdAt).toLocaleString("id-ID")}</span>
+            {!p.isRead && (
+              <button class="btn-read text-primary text-xs font-medium" data-id={p.id}>Tandai Dibaca</button>
+            )}
+          </div>
+        </div>
+        <p class="text-sm text-neutral-dark/80">{p.pesan}</p>
+      </div>
+    ))}
+    {pesanList.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 text-center py-10 bg-neutral-white rounded-xl">Belum ada pesan masuk.</p>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll(".btn-read").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = (btn as HTMLButtonElement).dataset.id;
+      const res = await fetch(`/api/admin/pesan/${id}`, { method: "PUT" });
+      if (res.ok) location.reload();
+    });
+  });
+</script>

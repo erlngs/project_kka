@@ -1,0 +1,93 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const filterStatus = Astro.url.searchParams.get("status") || "";
+const filterWilayah = Astro.url.searchParams.get("wilayah") || "";
+
+const pendaftaranList = await prisma.pendaftaran.findMany({
+  where: {
+    ...(filterStatus ? { status: filterStatus as any } : {}),
+    ...(filterWilayah ? { wilayahId: filterWilayah } : {}),
+  },
+  include: { wilayah: true, kecamatan: true, gelombang: true, invoice: true },
+  orderBy: { createdAt: "desc" },
+});
+
+const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc" } });
+
+const statusColor: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-700",
+  menunggu_verifikasi: "bg-blue-100 text-blue-700",
+  lunas: "bg-emerald-100 text-emerald-700",
+  ditolak: "bg-red-100 text-red-700",
+  dibatalkan: "bg-neutral-200 text-neutral-dark/60",
+};
+
+const jenjangLabel: Record<string, string> = {
+  SD_MI: "SD/MI",
+  SMP_MTS: "SMP/MTs",
+  SMA_MA_SMK: "SMA/MA/SMK",
+};
+---
+
+<AdminLayout title="Pendaftaran">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+    <p class="text-sm text-neutral-dark/60">Total {pendaftaranList.length} data pendaftaran.</p>
+    <form method="get" class="flex gap-2">
+      <select name="status" class="px-3 py-2 border border-neutral-200 rounded-lg text-sm" onchange="this.form.submit()">
+        <option value="">Semua Status</option>
+        <option value="pending" selected={filterStatus === "pending"}>Pending</option>
+        <option value="menunggu_verifikasi" selected={filterStatus === "menunggu_verifikasi"}>Menunggu Verifikasi</option>
+        <option value="lunas" selected={filterStatus === "lunas"}>Lunas</option>
+        <option value="ditolak" selected={filterStatus === "ditolak"}>Ditolak</option>
+      </select>
+      <select name="wilayah" class="px-3 py-2 border border-neutral-200 rounded-lg text-sm" onchange="this.form.submit()">
+        <option value="">Semua Wilayah</option>
+        {wilayahList.map((w) => <option value={w.id} selected={filterWilayah === w.id}>{w.nama}</option>)}
+      </select>
+    </form>
+  </div>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray whitespace-nowrap">
+          <th class="px-5 py-3 font-medium">Nama Siswa</th>
+          <th class="px-5 py-3 font-medium">NISN</th>
+          <th class="px-5 py-3 font-medium">WA</th>
+          <th class="px-5 py-3 font-medium">Wilayah</th>
+          <th class="px-5 py-3 font-medium">Kecamatan</th>
+          <th class="px-5 py-3 font-medium">Jenjang</th>
+          <th class="px-5 py-3 font-medium">Gelombang</th>
+          <th class="px-5 py-3 font-medium">Invoice</th>
+          <th class="px-5 py-3 font-medium">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pendaftaranList.map((p) => (
+          <tr class="border-b border-neutral-gray last:border-0 whitespace-nowrap">
+            <td class="px-5 py-3 text-neutral-dark font-medium">{p.namaSiswa}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{p.nisn}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{p.noWhatsapp}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{p.wilayah?.nama ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{p.kecamatan?.nama ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{jenjangLabel[p.jenjang ?? ""] ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{p.gelombang?.nama ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{p.invoice?.invoiceCode ?? "-"}</td>
+            <td class="px-5 py-3">
+              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColor[p.status] ?? ""}`}>
+                {p.status}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {pendaftaranList.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada data pendaftaran.</p>
+    )}
+  </div>
+</AdminLayout>

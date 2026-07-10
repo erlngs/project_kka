@@ -8,52 +8,158 @@ const { slug } = Astro.params;
 
 const page = await prisma.page.findUnique({
   where: { slug },
-  include: { blocks: { orderBy: { orderIndex: "asc" } } },
+  include: {
+    blocks: {
+      orderBy: { orderIndex: "asc" },
+    },
+  },
 });
 
 if (!page || !page.isPublished) {
   return new Response(null, { status: 404 });
 }
+
+const cardIcons: Record<string, string> = {
+  lightbulb: "💡",
+  target: "🎯",
+  star: "⭐",
+  shield: "🛡️",
+  users: "👥",
+  check: "✅",
+};
 ---
 
 <PublicLayout title={page.title}>
+
+  <!-- HERO BANNER - VERSI DEBUG -->
+  <section class="relative h-[420px] md:h-[520px] flex items-center justify-center text-center overflow-hidden bg-neutral-800">
+    {page.heroImageUrl ? (
+      <>
+        <img
+          src={page.heroImageUrl}
+          alt={page.title}
+          class="absolute inset-0 w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
+      </>
+    ) : (
+      <div class="absolute inset-0 bg-neutral-700 flex items-center justify-center">
+        <p class="text-white text-xl">❌ Tidak ada gambar banner</p>
+      </div>
+    )}
+
+    <div class="relative z-10 max-w-3xl px-6 text-white">
+      <h1 class="font-heading text-3xl md:text-5xl font-bold mb-4 leading-tight">
+        {page.title}
+      </h1>
+      {page.heroSubtitle && (
+        <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+          {page.heroSubtitle}
+        </p>
+      )}
+    </div>
+  </section>
+
+  <!-- Konten Blok -->
   <div class="max-w-4xl mx-auto px-6 py-12">
     {page.blocks.map((block) => {
-      const c = block.content;
+      const c = block.content as any;
+
       switch (block.blockType) {
         case "heading":
-          return <h2 class="font-heading text-2xl font-bold mb-4">{c.text}</h2>;
+          return <h2 class="font-heading text-2xl font-bold mb-6">{c.text}</h2>;
+
         case "paragraph":
-          return <p class="text-neutral-dark/80 mb-6 leading-relaxed">{c.text}</p>;
+          return <p class="text-neutral-dark/80 mb-6 leading-relaxed whitespace-pre-line">{c.text}</p>;
+
         case "image":
           return (
-            <figure class="mb-6">
+            <figure class="mb-8">
               <img src={c.image_url} alt={c.alt || ""} class="rounded-xl w-full" />
-              {c.caption && <figcaption class="text-sm text-neutral-dark/50 mt-2 text-center">{c.caption}</figcaption>}
+              {c.caption && <figcaption class="text-center text-sm text-neutral-dark/60 mt-2">{c.caption}</figcaption>}
             </figure>
           );
+
         case "gallery":
           return (
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              {(c.images || []).map((img) => <img src={img.url} class="rounded-lg w-full h-40 object-cover" />)}
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+              {(c.images || []).map((img: any) => (
+                <img
+                  src={img.url}
+                  alt={img.alt || ""}
+                  class="rounded-lg w-full h-52 object-cover"
+                />
+              ))}
             </div>
           );
+
         case "testimonial":
           return (
-            <blockquote class="bg-neutral-gray rounded-xl p-5 mb-6">
-              <p class="italic text-neutral-dark/80">"{c.message}"</p>
-              <footer class="mt-3 text-sm font-medium">{c.name} — {c.role}</footer>
+            <blockquote class="bg-neutral-gray rounded-2xl p-6 mb-8 italic">
+              "{c.message}"
+              <footer class="mt-4 text-sm font-medium">
+                — {c.name}{c.role ? `, ${c.role}` : ""}
+              </footer>
             </blockquote>
           );
+
         case "cta_button":
           return (
-            <a href={c.url} class="inline-block bg-primary text-neutral-white px-6 py-3 rounded-lg font-medium mb-6">
-              {c.label}
+            <a href={c.url} class="inline-block bg-primary text-white px-8 py-3.5 rounded-lg font-medium">
+              {c.text || c.label}
             </a>
           );
+
+        case "cards":
+          return (
+            <section class="mb-16 text-center">
+              {c.eyebrow && (
+                <p class="text-primary font-bold tracking-wide text-sm mb-2 uppercase">{c.eyebrow}</p>
+              )}
+              {c.title && (
+                <h2 class="font-heading text-3xl font-bold mb-3">{c.title}</h2>
+              )}
+              <div class="w-16 h-1 bg-primary mx-auto mb-10"></div>
+              <div class={`grid gap-6 text-left ${(c.items?.length || 0) > 2 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+                {(c.items || []).map((item: any) => (
+  <div class="group bg-white rounded-2xl shadow-md border border-neutral-100 p-8 transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/20">
+    {item.icon && cardIcons[item.icon] && (
+      <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-2xl mx-auto transition-transform duration-300 group-hover:scale-110">
+        {cardIcons[item.icon]}
+      </div>
+    )}
+    <h3 class="font-heading text-xl font-bold mb-3 text-center">{item.title}</h3>
+    <div class="text-neutral-dark/70 leading-relaxed text-left card-description" set:html={item.description} />
+  </div>
+))}
+              </div>
+            </section>
+          );
+
         default:
           return null;
       }
     })}
   </div>
 </PublicLayout>
+
+<style is:global>
+  .ql-align-center { text-align: center; }
+  .ql-align-right { text-align: right; }
+  .ql-align-justify { text-align: justify; }
+  .ql-size-small { font-size: 0.75em; }
+  .ql-size-large { font-size: 1.5em; }
+  .ql-size-huge { font-size: 2.5em; }
+
+  /* reset list style yang dihapus Tailwind preflight */
+  .ql-editor ol,
+  [set\:html] ol {
+    list-style: decimal;
+    padding-left: 1.5em;
+  }
+  .ql-editor ul,
+  [set\:html] ul {
+    list-style: disc;
+    padding-left: 1.5em;
+  }
+</style>

@@ -51,7 +51,7 @@ async function main() {
   await prisma.navMenu.deleteMany({});
 
   const navItems = [
-    { label: "Beranda", linkType: "anchor", target: "#beranda", orderIndex: 0 },
+    { label: "Beranda", linkType: "external_url", target: "/", orderIndex: 0 },
     { label: "Tentang KKA", linkType: "internal_page", target: "tentang-kka", orderIndex: 1 },
     { label: "Informasi", linkType: "internal_page", target: "informasi", orderIndex: 2 },
     { label: "Regulasi", linkType: "internal_page", target: "regulasi", orderIndex: 3 },

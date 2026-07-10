@@ -23,6 +23,7 @@ enum BlockType {
   testimonial
   cta_button
   hero
+  cards        // <-- tambahkan ini
 }
 
 enum Jenjang {
@@ -84,6 +85,8 @@ model Page {
   slug            String       @unique
   title           String
   metaDescription String?      @map("meta_description")
+  heroImageUrl    String?      @map("hero_image_url")
+  heroSubtitle    String?      @map("hero_subtitle")
   isPublished     Boolean      @default(true) @map("is_published")
   blocks          PageBlock[]
   createdAt       DateTime     @default(now()) @map("created_at")
@@ -105,12 +108,68 @@ model PageBlock {
   @@map("page_blocks")
 }
 
+model Pesan {
+  id        String   @id @default(uuid())
+  nama      String
+  email     String
+  telepon   String?
+  pesan     String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("pesan")
+}
+
 model SiteSetting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
+}
+
+model Setting {
+  id            String  @id @default(uuid())
+  key           String  @unique  // misal: "footer"
+  
+  footerText    String?
+  footerLogo    String?
+  whatsapp      String?
+  email         String?
+  copyright     String?
+
+  updatedAt     DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model Testimoni {
+  id         String   @id @default(uuid())
+  nama       String
+  asal       String?  // sekolah / peran, misal "Siswa SDN 1 Kediri"
+  pesan      String
+  fotoUrl    String?  @map("foto_url")
+  rating     Int?     @default(5)
+  orderIndex Int      @default(0) @map("order_index")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("testimoni")
+}
+
+model Article {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  title       String
+  category    String?
+  author      String?
+  thumbnail   String?
+  content     String
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("articles")
 }
 
 // ================== MASTER DATA ==================
@@ -123,6 +182,7 @@ model Wilayah {
   deskripsi   String?
   orderIndex  Int           @default(0) @map("order_index")
   isActive    Boolean       @default(true) @map("is_active")
+
   kecamatan   Kecamatan[]
   pendaftaran Pendaftaran[]
 
@@ -215,6 +275,7 @@ model Invoice {
   jumlahTagihan      Decimal       @map("jumlah_tagihan") @db.Decimal(12, 2)
   metodePembayaran   String?       @map("metode_pembayaran")
   buktiPembayaranUrl String?       @map("bukti_pembayaran_url")
+  catatanAdmin       String?       @map("catatan_admin")
   status             StatusInvoice @default(menunggu_pembayaran)
   dikonfirmasiOleh   String?       @map("dikonfirmasi_oleh")
   admin              AdminUser?    @relation(fields: [dikonfirmasiOleh], references: [id])

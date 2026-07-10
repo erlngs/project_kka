@@ -4,7 +4,9 @@ import { prisma } from "../../../lib/prisma";
 
 export const prerender = false;
 
-const halamanList = await prisma.page.findMany({ orderBy: { createdAt: "desc" } });
+const halamanList = await prisma.page.findMany({ 
+  orderBy: { createdAt: "desc" } 
+});
 ---
 
 <AdminLayout title="Halaman">
@@ -37,42 +39,68 @@ const halamanList = await prisma.page.findMany({ orderBy: { createdAt: "desc" } 
             </td>
             <td class="px-5 py-3 text-right">
               <a href={`/admin/halaman/${p.id}`} class="text-primary text-xs font-medium mr-3">Kelola Isi</a>
+              
               <button
                 class="btn-edit text-neutral-dark/70 text-xs font-medium mr-3"
                 data-id={p.id}
                 data-slug={p.slug}
                 data-title={p.title}
                 data-meta={p.metaDescription ?? ""}
+                data-hero-subtitle={p.heroSubtitle ?? ""}
+                data-hero-url={p.heroImageUrl ?? ""}
                 data-published={String(p.isPublished)}
-              >Edit</button>
+              >
+                Edit
+              </button>
+              
               <button class="btn-delete text-red-500 text-xs font-medium" data-id={p.id}>Hapus</button>
             </td>
           </tr>
         ))}
       </tbody>
     </table>
+
     {halamanList.length === 0 && (
       <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada halaman.</p>
     )}
   </div>
 
+  <!-- Modal -->
   <div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
     <div class="bg-neutral-white rounded-xl w-full max-w-md p-6">
       <h2 id="modal-title" class="font-heading font-semibold text-lg text-neutral-dark mb-4">Tambah Halaman</h2>
+      
       <form id="form-halaman" class="flex flex-col gap-3">
         <input type="hidden" id="f-id" />
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Judul Halaman</label>
           <input id="f-title" required class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Slug (URL)</label>
           <input id="f-slug" required placeholder="tentang-kami" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Meta Description</label>
           <textarea id="f-meta" rows="2" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
         </div>
+
+        <!-- Field Banner -->
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Subjudul Banner</label>
+          <textarea id="f-hero-subtitle" rows="2" placeholder="Deskripsi singkat di bawah judul banner" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Foto Banner</label>
+          <input type="file" id="f-hero-file" accept="image/*" class="w-full text-sm" />
+          <input type="hidden" id="f-hero-url" />
+          <img id="preview-hero" class="mt-2 rounded-lg max-h-32 hidden" />
+        </div>
+
         <label class="flex items-center gap-2 text-sm text-neutral-dark">
           <input id="f-published" type="checkbox" checked />
           Publish
@@ -101,35 +129,56 @@ const halamanList = await prisma.page.findMany({ orderBy: { createdAt: "desc" } 
   const fMeta = document.getElementById("f-meta") as HTMLTextAreaElement;
   const fPublished = document.getElementById("f-published") as HTMLInputElement;
 
+  const fHeroSubtitle = document.getElementById("f-hero-subtitle") as HTMLTextAreaElement;
+  const fHeroUrl = document.getElementById("f-hero-url") as HTMLInputElement;
+  const previewHero = document.getElementById("preview-hero") as HTMLImageElement;
+
   function openModal(isEdit = false) {
     errorBox.classList.add("hidden");
     modalTitle.textContent = isEdit ? "Edit Halaman" : "Tambah Halaman";
     modal.classList.remove("hidden");
   }
 
+  // Tambah Halaman Baru
   document.getElementById("btn-add")?.addEventListener("click", () => {
     fId.value = "";
     fTitle.value = "";
     fSlug.value = "";
     fMeta.value = "";
+    fHeroSubtitle.value = "";
+    fHeroUrl.value = "";
+    previewHero.classList.add("hidden");
     fPublished.checked = true;
     openModal(false);
   });
 
   document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
 
+  // Edit Halaman
   document.querySelectorAll(".btn-edit").forEach((btn) => {
     btn.addEventListener("click", () => {
       const el = btn as HTMLButtonElement;
+      
       fId.value = el.dataset.id || "";
       fTitle.value = el.dataset.title || "";
       fSlug.value = el.dataset.slug || "";
       fMeta.value = el.dataset.meta || "";
+      fHeroSubtitle.value = el.dataset.heroSubtitle || "";
+      fHeroUrl.value = el.dataset.heroUrl || "";
+      
+      if (el.dataset.heroUrl) {
+        previewHero.src = el.dataset.heroUrl;
+        previewHero.classList.remove("hidden");
+      } else {
+        previewHero.classList.add("hidden");
+      }
+      
       fPublished.checked = el.dataset.published === "true";
       openModal(true);
     });
   });
 
+  // Hapus Halaman
   document.querySelectorAll(".btn-delete").forEach((btn) => {
     btn.addEventListener("click", async () => {
       if (!confirm("Yakin hapus halaman ini? Semua blok isinya juga akan terhapus.")) return;
@@ -139,6 +188,31 @@ const halamanList = await prisma.page.findMany({ orderBy: { createdAt: "desc" } 
     });
   });
 
+  // Upload Foto Banner
+  document.getElementById("f-hero-file")?.addEventListener("change", async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    try {
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+
+      if (data.url) {
+        fHeroUrl.value = data.url;
+        previewHero.src = data.url;
+        previewHero.classList.remove("hidden");
+      } else {
+        alert("Gagal upload: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan saat upload");
+    }
+  });
+
+  // Submit Form
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorBox.classList.add("hidden");
@@ -147,6 +221,8 @@ const halamanList = await prisma.page.findMany({ orderBy: { createdAt: "desc" } 
       title: fTitle.value,
       slug: fSlug.value,
       metaDescription: fMeta.value,
+      heroSubtitle: fHeroSubtitle.value,
+      heroImageUrl: fHeroUrl.value,
       isPublished: fPublished.checked,
     };
 
@@ -160,15 +236,17 @@ const halamanList = await prisma.page.findMany({ orderBy: { createdAt: "desc" } 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         errorBox.textContent = data.message || "Gagal menyimpan data";
         errorBox.classList.remove("hidden");
         return;
       }
+
       location.reload();
     } catch {
-      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.textContent = "Terjadi kesalahan koneksi, coba lagi.";
       errorBox.classList.remove("hidden");
     }
   });

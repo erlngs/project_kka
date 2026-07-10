@@ -14,6 +14,8 @@ if (!page) return Astro.redirect("/admin/halaman");
 ---
 
 <AdminLayout title={`Kelola: ${page.title}`}>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" is:inline />
+
   <div class="flex justify-between items-center mb-5">
     <p class="text-sm text-neutral-dark/60">Atur isi halaman <b>{page.title}</b> — tambah, edit, hapus, atur urutan blok.</p>
     <button id="btn-add-block" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
@@ -63,6 +65,7 @@ if (!page) return Astro.redirect("/admin/halaman");
             <option value="gallery">Gallery</option>
             <option value="testimonial">Testimonial</option>
             <option value="cta_button">CTA Button</option>
+            <option value="cards">Cards (Visi Misi, dll)</option>
           </select>
         </div>
 
@@ -81,21 +84,21 @@ if (!page) return Astro.redirect("/admin/halaman");
         </div>
 
         <div id="fields-image" class="field-group hidden flex-col gap-3">
-  <div>
-    <label class="block text-sm font-medium text-neutral-dark mb-1">Upload Gambar</label>
-    <input type="file" id="f-image-file" accept="image/*" class="w-full text-sm" />
-    <input type="hidden" class="f-input" data-key="image_url" id="f-image-url-hidden" />
-    <img id="preview-image" class="mt-2 rounded-lg max-h-40 hidden" />
-  </div>
-  <div>
-    <label class="block text-sm font-medium text-neutral-dark mb-1">Alt Text</label>
-    <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="alt" />
-  </div>
-  <div>
-    <label class="block text-sm font-medium text-neutral-dark mb-1">Caption</label>
-    <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="caption" />
-  </div>
-</div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Upload Gambar</label>
+            <input type="file" id="f-image-file" accept="image/*" class="w-full text-sm" />
+            <input type="hidden" class="f-input" data-key="image_url" id="f-image-url-hidden" />
+            <img id="preview-image" class="mt-2 rounded-lg max-h-40 hidden" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Alt Text</label>
+            <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="alt" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Caption</label>
+            <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="caption" />
+          </div>
+        </div>
 
         <div id="fields-gallery" class="field-group hidden flex-col gap-3">
           <div>
@@ -130,6 +133,22 @@ if (!page) return Astro.redirect("/admin/halaman");
           </div>
         </div>
 
+        <div id="fields-cards" class="field-group hidden flex-col gap-3">
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Label Kecil (Eyebrow)</label>
+            <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="eyebrow" placeholder="KKA 2026 JAWA POS RADAR KEDIRI" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Judul Section</label>
+            <input class="f-input w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" data-key="title" placeholder="Visi, Misi & Tujuan" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Daftar Card</label>
+            <div id="cards-items" class="flex flex-col gap-3 mt-2"></div>
+            <button type="button" id="btn-add-card-item" class="mt-2 text-sm text-primary font-medium">+ Tambah Card</button>
+          </div>
+        </div>
+
         <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
 
         <div class="flex justify-end gap-2 mt-2">
@@ -140,6 +159,9 @@ if (!page) return Astro.redirect("/admin/halaman");
     </div>
   </div>
 </AdminLayout>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" is:inline></script>
+
 <script define:vars={{ pageId: page.id }}>
   const modal = document.getElementById("modal");
   const modalTitle = document.getElementById("modal-title");
@@ -147,6 +169,7 @@ if (!page) return Astro.redirect("/admin/halaman");
   const errorBox = document.getElementById("form-error");
   const typeSelect = document.getElementById("f-type");
   const blockIdInput = document.getElementById("f-block-id");
+  const cardsItemsContainer = document.getElementById("cards-items");
 
   function showFieldsFor(type) {
     document.querySelectorAll(".field-group").forEach((el) => el.classList.add("hidden"));
@@ -156,7 +179,73 @@ if (!page) return Astro.redirect("/admin/halaman");
   function clearFields() {
     document.querySelectorAll(".f-input").forEach((el) => (el.value = ""));
     document.getElementById("preview-image")?.classList.add("hidden");
+    cardsItemsContainer.innerHTML = "";
   }
+
+  // ---- Card item (dengan Quill rich text untuk deskripsi) ----
+  function createCardItemRow(item = {}) {
+    const div = document.createElement("div");
+    div.className = "card-item border border-neutral-200 rounded-lg p-3 flex flex-col gap-2 relative";
+    div.innerHTML = `
+      <button type="button" class="btn-remove-item absolute top-2 right-2 text-red-500 text-xs z-10">✕</button>
+      <div>
+        <label class="block text-xs font-medium text-neutral-dark mb-1">Icon</label>
+        <select class="f-item-input w-full px-2 py-1.5 border border-neutral-200 rounded text-sm" data-key="icon">
+          <option value="">Tanpa Icon</option>
+          <option value="lightbulb">💡 Lightbulb</option>
+          <option value="target">🎯 Target</option>
+          <option value="star">⭐ Star</option>
+          <option value="shield">🛡 Shield</option>
+          <option value="users">👥 Users</option>
+          <option value="check">✅ Check</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-neutral-dark mb-1">Judul Card</label>
+        <input class="f-item-input w-full px-2 py-1.5 border border-neutral-200 rounded text-sm" data-key="title" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-neutral-dark mb-1">Deskripsi</label>
+        <div class="quill-editor-container bg-white rounded border border-neutral-200"></div>
+      </div>
+    `;
+
+    div.querySelector('[data-key="icon"]').value = item.icon || "";
+    div.querySelector('[data-key="title"]').value = item.title || "";
+    div.querySelector(".btn-remove-item").addEventListener("click", () => {
+      div._quill = null;
+      div.remove();
+    });
+
+    // Append dulu ke container supaya Quill bisa attach dengan benar
+    cardsItemsContainer.appendChild(div);
+
+    const editorContainer = div.querySelector(".quill-editor-container");
+    const quill = new Quill(editorContainer, {
+      theme: "snow",
+      modules: {
+  toolbar: [
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    [{ color: [] }],
+    [{ size: ["small", false, "large", "huge"] }],
+  ],
+},
+    });
+
+    if (item.description) {
+      quill.clipboard.dangerouslyPasteHTML(item.description);
+    }
+
+    div._quill = quill;
+
+    return div;
+  }
+
+  document.getElementById("btn-add-card-item").addEventListener("click", () => {
+    createCardItemRow();
+  });
 
   typeSelect.addEventListener("change", (e) => showFieldsFor(e.target.value));
 
@@ -191,6 +280,11 @@ if (!page) return Astro.redirect("/admin/halaman");
         const preview = document.getElementById("preview-image");
         preview.src = content.image_url;
         preview.classList.remove("hidden");
+      }
+
+      if (type === "cards") {
+        cardsItemsContainer.innerHTML = "";
+        (content.items || []).forEach((item) => createCardItemRow(item));
       }
 
       modalTitle.textContent = "Edit Blok";
@@ -243,6 +337,7 @@ if (!page) return Astro.redirect("/admin/halaman");
 
     const type = typeSelect.value;
     const content = {};
+
     document.querySelectorAll(`#fields-${type} .f-input`).forEach((input) => {
       const key = input.dataset.key;
       if (key === "images") {
@@ -251,6 +346,17 @@ if (!page) return Astro.redirect("/admin/halaman");
         content[key] = input.value;
       }
     });
+
+    if (type === "cards") {
+      content.items = Array.from(document.querySelectorAll("#cards-items .card-item")).map((row) => {
+        const item = {};
+        row.querySelectorAll(".f-item-input").forEach((input) => {
+          item[input.dataset.key] = input.value;
+        });
+        item.description = row._quill ? row._quill.root.innerHTML : "";
+        return item;
+      });
+    }
 
     const isEdit = !!blockIdInput.value;
     const url = isEdit

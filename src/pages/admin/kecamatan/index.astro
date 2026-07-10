@@ -1,0 +1,153 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const kecamatanList = await prisma.kecamatan.findMany({
+  include: { wilayah: true },
+  orderBy: { nama: "asc" },
+});
+const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc" } });
+---
+
+<AdminLayout title="Kecamatan">
+  <div class="flex justify-between items-center mb-5">
+    <p class="text-sm text-neutral-dark/60">Kelola daftar kecamatan per wilayah, dipakai di form pendaftaran.</p>
+    <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
+      + Tambah Kecamatan
+    </button>
+  </div>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+          <th class="px-5 py-3 font-medium">Kecamatan</th>
+          <th class="px-5 py-3 font-medium">Wilayah</th>
+          <th class="px-5 py-3 font-medium text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {kecamatanList.map((k) => (
+          <tr class="border-b border-neutral-gray last:border-0">
+            <td class="px-5 py-3 text-neutral-dark">{k.nama}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{k.wilayah.nama}</td>
+            <td class="px-5 py-3 text-right">
+              <button
+                class="btn-edit text-primary text-xs font-medium mr-3"
+                data-id={k.id}
+                data-nama={k.nama}
+                data-wilayah={k.wilayahId}
+              >Edit</button>
+              <button class="btn-delete text-red-500 text-xs font-medium" data-id={k.id}>Hapus</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {kecamatanList.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada kecamatan.</p>
+    )}
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div class="bg-neutral-white rounded-xl w-full max-w-md p-6">
+      <h2 id="modal-title" class="font-heading font-semibold text-lg text-neutral-dark mb-4">Tambah Kecamatan</h2>
+      <form id="form-kecamatan" class="flex flex-col gap-3">
+        <input type="hidden" id="f-id" />
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Wilayah</label>
+          <select id="f-wilayah" required class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm">
+            <option value="">-- Pilih Wilayah --</option>
+            {wilayahList.map((w) => <option value={w.id}>{w.nama}</option>)}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Nama Kecamatan</label>
+          <input id="f-nama" required placeholder="Cth: Kepung" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+
+        <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
+
+        <div class="flex justify-end gap-2 mt-2">
+          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/60 hover:bg-neutral-gray rounded-lg">Batal</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-primary text-neutral-white rounded-lg hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const modal = document.getElementById("modal") as HTMLDivElement;
+  const modalTitle = document.getElementById("modal-title") as HTMLHeadingElement;
+  const form = document.getElementById("form-kecamatan") as HTMLFormElement;
+  const errorBox = document.getElementById("form-error") as HTMLDivElement;
+
+  const fId = document.getElementById("f-id") as HTMLInputElement;
+  const fWilayah = document.getElementById("f-wilayah") as HTMLSelectElement;
+  const fNama = document.getElementById("f-nama") as HTMLInputElement;
+
+  function openModal(isEdit = false) {
+    errorBox.classList.add("hidden");
+    modalTitle.textContent = isEdit ? "Edit Kecamatan" : "Tambah Kecamatan";
+    modal.classList.remove("hidden");
+  }
+
+  document.getElementById("btn-add")?.addEventListener("click", () => {
+    fId.value = "";
+    fWilayah.value = "";
+    fNama.value = "";
+    openModal(false);
+  });
+
+  document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
+
+  document.querySelectorAll(".btn-edit").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const el = btn as HTMLButtonElement;
+      fId.value = el.dataset.id || "";
+      fWilayah.value = el.dataset.wilayah || "";
+      fNama.value = el.dataset.nama || "";
+      openModal(true);
+    });
+  });
+
+  document.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Yakin hapus kecamatan ini?")) return;
+      const id = (btn as HTMLButtonElement).dataset.id;
+      const res = await fetch(`/api/admin/kecamatan/${id}`, { method: "DELETE" });
+      if (res.ok) location.reload();
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+
+    const payload = { nama: fNama.value, wilayahId: fWilayah.value };
+    const isEdit = !!fId.value;
+    const url = isEdit ? `/api/admin/kecamatan/${fId.value}` : "/api/admin/kecamatan";
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        errorBox.textContent = data.message || "Gagal menyimpan data";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+      location.reload();
+    } catch {
+      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.classList.remove("hidden");
+    }
+  });
+</script>

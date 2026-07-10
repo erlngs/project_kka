@@ -1,33 +1,88 @@
 ---
+import { prisma } from "../../lib/prisma";
+
 const currentYear = new Date().getFullYear();
+
+const footer = await prisma.setting.findUnique({
+  where: {
+    key: "footer",
+  },
+});
+
+const menu = await prisma.navMenu.findMany({
+  where: {
+    isActive: true,
+    parentId: null,
+  },
+  orderBy: {
+    orderIndex: "asc",
+  },
+});
 ---
 
 <footer class="bg-neutral-dark text-neutral-white py-12 mt-16">
   <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+
     <div>
-      <span class="font-heading font-bold text-lg">KKA <span class="text-secondary">Kediri</span></span>
+      {
+        footer?.footerLogo ? (
+          <img
+            src={footer.footerLogo}
+            alt="Logo"
+            class="h-20 mb-4"
+          />
+        ) : (
+          <span class="font-heading font-bold text-lg">
+            {footer?.footerText ?? "KKA Kediri"}
+          </span>
+        )
+      }
+
       <p class="text-sm text-neutral-white/60 mt-3 leading-relaxed">
-        Kompetisi Kompetensi Akademik — Jawa Pos Radar Kediri. Challenge Your Brain, Test Your Skills.
+        {footer?.footerText ?? "Kompetisi Kompetensi Akademik"}
       </p>
     </div>
 
     <div>
-      <h4 class="font-heading font-semibold mb-3 text-sm">Tautan</h4>
-      <ul class="text-sm text-neutral-white/60 flex flex-col gap-2">
-        <li><a href="/tentang-kami" class="hover:text-white">Tentang Kami</a></li>
-        <li><a href="/regulasi" class="hover:text-white">Regulasi</a></li>
-        <li><a href="/daftar" class="hover:text-white">Pendaftaran</a></li>
-      </ul>
-    </div>
+  <h4 class="font-heading font-semibold mb-3 text-sm">
+    Tautan
+  </h4>
+
+  <ul class="text-sm text-neutral-white/60 flex flex-col gap-2">
+    {menu.map((item) => {
+      const href =
+        item.linkType === "internal_page"
+          ? `/${item.target}`
+          : item.target;
+
+      return (
+        <li>
+          <a href={href} class="hover:text-white transition-colors">
+            {item.label}
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</div>
 
     <div>
-      <h4 class="font-heading font-semibold mb-3 text-sm">Kontak</h4>
-      <p class="text-sm text-neutral-white/60">WhatsApp: 0812-3456-7890</p>
-      <p class="text-sm text-neutral-white/60">Email: info@kkakediri.com</p>
+      <h4 class="font-heading font-semibold mb-3 text-sm">
+        Kontak
+      </h4>
+
+      <p class="text-sm text-neutral-white/60">
+        WhatsApp: {footer?.whatsapp}
+      </p>
+
+      <p class="text-sm text-neutral-white/60">
+        Email: {footer?.email}
+      </p>
     </div>
+
   </div>
 
   <div class="max-w-6xl mx-auto px-6 mt-8 pt-6 border-t border-neutral-white/10 text-xs text-neutral-white/40">
-    © {currentYear} Kompetisi Kompetensi Akademik — Jawa Pos Radar Kediri
+    © {currentYear} {footer?.copyright}
   </div>
 </footer>

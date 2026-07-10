@@ -1,0 +1,120 @@
+---
+import PublicLayout from "../layouts/PublicLayout.astro";
+import { prisma } from "../lib/prisma";
+
+export const prerender = false;
+
+const articles = await prisma.article.findMany({
+  where: { publishedAt: { not: null } },
+  orderBy: { publishedAt: "desc" },
+});
+
+const pageInfo = await prisma.page.findUnique({ where: { slug: "blog" } });
+
+const placeholder = "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80";
+
+function formatDate(d: Date) {
+  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(d);
+}
+
+function excerpt(text: string, len = 130) {
+  return text.length > len ? text.slice(0, len).trim() + "…" : text;
+}
+
+const [featured, ...rest] = articles;
+---
+
+<PublicLayout title="Blog">
+  <section class="relative h-[420px] md:h-[520px] flex items-center justify-center text-center overflow-hidden bg-neutral-800">
+  {pageInfo?.heroImageUrl ? (
+    <>
+      <img
+        src={pageInfo.heroImageUrl}
+        alt="Blog"
+        class="absolute inset-0 w-full h-full object-cover"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
+    </>
+  ) : (
+    <div class="absolute inset-0 bg-gradient-to-br from-primary to-blue-800"></div>
+  )}
+
+  <div class="relative z-10 max-w-3xl px-6 text-white">
+    <h1 class="font-heading text-3xl md:text-5xl font-bold mb-4 leading-tight">
+      {pageInfo?.title ?? "Artikel & Info Terbaru"}
+    </h1>
+    <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+      {pageInfo?.heroSubtitle ?? "Tips belajar, info pendaftaran, dan kabar terbaru seputar Kompetisi Kompetensi Akademik."}
+    </p>
+  </div>
+</section>
+
+  <section class="max-w-6xl mx-auto px-6 py-16">
+    {articles.length === 0 ? (
+      <p class="text-center text-neutral-dark/50 py-10">Belum ada artikel yang dipublish.</p>
+    ) : (
+      <>
+        {featured && (
+          <a href={`/blog/${featured.slug}`} class="group block mb-12 rounded-2xl overflow-hidden bg-neutral-white shadow-sm hover:shadow-lg transition-shadow lg:grid lg:grid-cols-2">
+            <div class="h-64 lg:h-full overflow-hidden">
+              <img
+                src={featured.thumbnail ?? placeholder}
+                alt={featured.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div class="p-8 flex flex-col justify-center">
+              <div class="flex items-center gap-2 mb-3">
+                {featured.category && (
+                  <span class="bg-secondary/10 text-secondary text-xs font-semibold px-2.5 py-1 rounded-full uppercase">
+                    {featured.category}
+                  </span>
+                )}
+                <span class="text-xs text-neutral-dark/40">
+                  {featured.publishedAt && formatDate(featured.publishedAt)}
+                </span>
+              </div>
+              <h2 class="font-heading text-2xl font-bold text-neutral-dark mb-3 group-hover:text-primary transition-colors">
+                {featured.title}
+              </h2>
+              <p class="text-neutral-dark/60 text-sm leading-relaxed mb-4">{excerpt(featured.content, 200)}</p>
+              {featured.author && <p class="text-xs text-neutral-dark/50">Oleh {featured.author}</p>}
+            </div>
+          </a>
+        )}
+
+        {rest.length > 0 && (
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rest.map((post) => (
+              <a href={`/blog/${post.slug}`} class="group block rounded-xl overflow-hidden bg-neutral-white shadow-sm hover:shadow-md transition-shadow">
+                <div class="h-44 overflow-hidden">
+                  <img
+                    src={post.thumbnail ?? placeholder}
+                    alt={post.title}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="p-5">
+                  <div class="flex items-center gap-2 mb-2">
+                    {post.category && (
+                      <span class="text-secondary text-xs font-semibold uppercase">{post.category}</span>
+                    )}
+                    <span class="text-neutral-dark/30 text-xs">•</span>
+                    <span class="text-xs text-neutral-dark/40">
+                      {post.publishedAt && formatDate(post.publishedAt)}
+                    </span>
+                  </div>
+                  <h3 class="font-heading font-semibold text-neutral-dark leading-snug mb-2 group-hover:text-primary transition-colors">
+                    {post.title}
+                  </h3>
+                  <p class="text-sm text-neutral-dark/60 leading-relaxed">{excerpt(post.content)}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </>
+    )}
+  </section>
+</PublicLayout>

@@ -1,0 +1,102 @@
+---
+import PublicLayout from "../layouts/PublicLayout.astro";
+export const prerender = false;
+---
+
+<PublicLayout title="Cek Status Pendaftaran">
+  <div class="max-w-xl mx-auto px-6 py-12">
+    <h1 class="font-heading text-2xl font-bold text-neutral-dark mb-2">Cek Status Pendaftaran</h1>
+    <p class="text-sm text-neutral-dark/60 mb-8">Masukkan kode invoice yang kamu dapat saat mendaftar.</p>
+
+    <form id="form-cek" class="flex gap-2 mb-8">
+      <input
+        id="f-code"
+        required
+        placeholder="Cth: KKA-2026-123456"
+        class="flex-1 px-4 py-2.5 bg-neutral-gray border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+      />
+      <button type="submit" id="btn-cek" class="bg-primary text-neutral-white font-medium px-5 py-2.5 rounded-lg hover:opacity-90">
+        Cek
+      </button>
+    </form>
+
+    <div id="error-box" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3 mb-6"></div>
+
+    <div id="result-box" class="hidden bg-neutral-white rounded-xl shadow-sm p-6">
+      <div class="flex justify-between items-center border-b border-neutral-gray pb-4 mb-4">
+        <span class="text-sm text-neutral-dark/60">Kode Invoice</span>
+        <span id="r-code" class="font-heading font-bold text-primary"></span>
+      </div>
+      <div class="flex flex-col gap-2 text-sm">
+        <div class="flex justify-between"><span class="text-neutral-dark/60">Nama Siswa</span><span id="r-nama" class="text-neutral-dark font-medium"></span></div>
+        <div class="flex justify-between"><span class="text-neutral-dark/60">Wilayah</span><span id="r-wilayah" class="text-neutral-dark"></span></div>
+        <div class="flex justify-between"><span class="text-neutral-dark/60">Gelombang</span><span id="r-gelombang" class="text-neutral-dark"></span></div>
+        <div class="flex justify-between"><span class="text-neutral-dark/60">Total Tagihan</span><span id="r-tagihan" class="text-neutral-dark font-medium"></span></div>
+        <div class="flex justify-between border-t border-neutral-gray pt-3 mt-1">
+          <span class="text-neutral-dark font-medium">Status Pembayaran</span>
+          <span id="r-status" class="px-2.5 py-1 rounded-full text-xs font-medium"></span>
+        </div>
+      </div>
+      <a id="r-invoice-link" class="block text-center mt-4 text-sm text-primary underline">Lihat halaman invoice / upload ulang bukti</a>
+    </div>
+  </div>
+</PublicLayout>
+
+<script>
+  const statusLabel: Record<string, string> = {
+    menunggu_pembayaran: "Menunggu Pembayaran",
+    menunggu_verifikasi: "Menunggu Verifikasi",
+    terverifikasi: "Terverifikasi / Lunas",
+    ditolak: "Ditolak",
+  };
+  const statusColor: Record<string, string> = {
+    menunggu_pembayaran: "bg-amber-100 text-amber-700",
+    menunggu_verifikasi: "bg-blue-100 text-blue-700",
+    terverifikasi: "bg-emerald-100 text-emerald-700",
+    ditolak: "bg-red-100 text-red-700",
+  };
+
+  function formatRupiah(n: number) {
+    return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
+  }
+
+  const form = document.getElementById("form-cek") as HTMLFormElement;
+  const errorBox = document.getElementById("error-box") as HTMLDivElement;
+  const resultBox = document.getElementById("result-box") as HTMLDivElement;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+    resultBox.classList.add("hidden");
+
+    const code = (document.getElementById("f-code") as HTMLInputElement).value;
+
+    try {
+      const res = await fetch(`/api/public/cek-status?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorBox.textContent = data.message;
+        errorBox.classList.remove("hidden");
+        return;
+      }
+
+      (document.getElementById("r-code") as HTMLElement).textContent = data.invoiceCode;
+      (document.getElementById("r-nama") as HTMLElement).textContent = data.pendaftaran.namaSiswa;
+      (document.getElementById("r-wilayah") as HTMLElement).textContent = data.pendaftaran.wilayah?.nama ?? "-";
+      (document.getElementById("r-gelombang") as HTMLElement).textContent = data.pendaftaran.gelombang?.nama ?? "-";
+      (document.getElementById("r-tagihan") as HTMLElement).textContent = formatRupiah(Number(data.jumlahTagihan));
+
+      const statusEl = document.getElementById("r-status") as HTMLElement;
+      statusEl.textContent = statusLabel[data.status] || data.status;
+      statusEl.className = `px-2.5 py-1 rounded-full text-xs font-medium ${statusColor[data.status] || ""}`;
+
+      (document.getElementById("r-invoice-link") as HTMLAnchorElement).href = `/invoice/${data.invoiceCode}`;
+
+      resultBox.classList.remove("hidden");
+    } catch {
+      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.classList.remove("hidden");
+    }
+  });
+</script>

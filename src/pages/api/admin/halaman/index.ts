@@ -17,11 +17,13 @@ export const POST: APIRoute = async ({ request }) => {
 
   const created = await prisma.page.create({
     data: {
-      slug: body.slug,
-      title: body.title,
-      metaDescription: body.metaDescription || null,
-      isPublished: body.isPublished ?? true,
-    },
+  slug: body.slug,
+  title: body.title,
+  metaDescription: body.metaDescription || null,
+  heroImageUrl: body.heroImageUrl || null,
+  heroSubtitle: body.heroSubtitle || null,
+  isPublished: body.isPublished ?? true,
+},
   });
 
   return new Response(JSON.stringify(created), { status: 201 });

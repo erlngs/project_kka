@@ -15,14 +15,14 @@ export const POST: APIRoute = async ({ request }) => {
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error } = await supabaseAdmin.storage
-    .from("project_kka") // ganti sesuai nama bucket kamu
-    .upload(fileName, file, { contentType: file.type });
+  .from("project_kka")  // sebelumnya "kka-assets"
+  .upload(fileName, file, { contentType: file.type });
 
   if (error) {
     return new Response(JSON.stringify({ message: error.message }), { status: 500 });
   }
 
-  const { data } = supabaseAdmin.storage.from("kka-assets").getPublicUrl(fileName);
+  const { data } = supabaseAdmin.storage.from("project_kka").getPublicUrl(fileName);
 
   return new Response(JSON.stringify({ url: data.publicUrl }), { status: 200 });
 };

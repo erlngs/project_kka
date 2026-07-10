@@ -12,6 +12,8 @@ export const PUT: APIRoute = async ({ params, request }) => {
       slug: body.slug,
       title: body.title,
       metaDescription: body.metaDescription || null,
+      heroSubtitle: body.heroSubtitle || null,     // ← Tambahkan ini
+      heroImageUrl: body.heroImageUrl || null,     // ← Tambahkan ini
       isPublished: body.isPublished ?? true,
     },
   });

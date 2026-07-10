@@ -1,0 +1,239 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc" } });
+---
+
+<AdminLayout title="Artikel">
+  <div class="flex justify-between items-center mb-5">
+    <p class="text-sm text-neutral-dark/60">Kelola artikel & blog website.</p>
+    <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
+      + Tambah Artikel
+    </button>
+  </div>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+          <th class="px-5 py-3 font-medium">Judul</th>
+          <th class="px-5 py-3 font-medium">Kategori</th>
+          <th class="px-5 py-3 font-medium">Penulis</th>
+          <th class="px-5 py-3 font-medium">Status</th>
+          <th class="px-5 py-3 font-medium text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {articleList.map((a) => (
+          <tr class="border-b border-neutral-gray last:border-0">
+            <td class="px-5 py-3 text-neutral-dark">{a.title}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{a.category ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{a.author ?? "-"}</td>
+            <td class="px-5 py-3">
+              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${a.publishedAt ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/60"}`}>
+                {a.publishedAt ? "Published" : "Draft"}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <button
+                class="btn-edit text-primary text-xs font-medium mr-3"
+                data-id={a.id}
+                data-title={a.title}
+                data-slug={a.slug}
+                data-category={a.category ?? ""}
+                data-author={a.author ?? ""}
+                data-thumbnail={a.thumbnail ?? ""}
+                data-content={a.content}
+                data-published={String(!!a.publishedAt)}
+              >Edit</button>
+              <button class="btn-delete text-red-500 text-xs font-medium" data-id={a.id}>Hapus</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {articleList.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada artikel.</p>
+    )}
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div class="bg-neutral-white rounded-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <h2 id="modal-title" class="font-heading font-semibold text-lg text-neutral-dark mb-4">Tambah Artikel</h2>
+      <form id="form-artikel" class="flex flex-col gap-3">
+        <input type="hidden" id="f-id" />
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Judul</label>
+          <input id="f-title" required class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Slug (URL)</label>
+          <input id="f-slug" required placeholder="tips-belajar-hots" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Kategori</label>
+            <input id="f-category" placeholder="Tips, Berita, dll" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-dark mb-1">Penulis</label>
+            <input id="f-author" placeholder="Admin KKA" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Thumbnail</label>
+          <input type="file" id="f-thumb-file" accept="image/*" class="w-full text-sm" />
+          <input type="hidden" id="f-thumb-url" />
+          <img id="preview-thumb" class="mt-2 rounded-lg max-h-32 hidden" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Konten</label>
+          <p class="text-xs text-neutral-dark/50 mb-1">Pisahkan antar paragraf dengan baris kosong.</p>
+          <textarea id="f-content" required rows="8" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-neutral-dark">
+          <input id="f-published" type="checkbox" />
+          Publish sekarang
+        </label>
+
+        <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
+
+        <div class="flex justify-end gap-2 mt-2">
+          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/60 hover:bg-neutral-gray rounded-lg">Batal</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-primary text-neutral-white rounded-lg hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const modal = document.getElementById("modal") as HTMLDivElement;
+  const modalTitle = document.getElementById("modal-title") as HTMLHeadingElement;
+  const form = document.getElementById("form-artikel") as HTMLFormElement;
+  const errorBox = document.getElementById("form-error") as HTMLDivElement;
+
+  const fId = document.getElementById("f-id") as HTMLInputElement;
+  const fTitle = document.getElementById("f-title") as HTMLInputElement;
+  const fSlug = document.getElementById("f-slug") as HTMLInputElement;
+  const fCategory = document.getElementById("f-category") as HTMLInputElement;
+  const fAuthor = document.getElementById("f-author") as HTMLInputElement;
+  const fThumbUrl = document.getElementById("f-thumb-url") as HTMLInputElement;
+  const fContent = document.getElementById("f-content") as HTMLTextAreaElement;
+  const fPublished = document.getElementById("f-published") as HTMLInputElement;
+  const previewThumb = document.getElementById("preview-thumb") as HTMLImageElement;
+
+  function slugify(text: string) {
+    return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  }
+  fTitle.addEventListener("input", () => {
+    if (!fId.value) fSlug.value = slugify(fTitle.value);
+  });
+
+  function openModal(isEdit = false) {
+    errorBox.classList.add("hidden");
+    modalTitle.textContent = isEdit ? "Edit Artikel" : "Tambah Artikel";
+    modal.classList.remove("hidden");
+  }
+
+  document.getElementById("f-thumb-file")?.addEventListener("change", async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+    const data = await res.json();
+    if (data.url) {
+      fThumbUrl.value = data.url;
+      previewThumb.src = data.url;
+      previewThumb.classList.remove("hidden");
+    } else {
+      alert("Gagal upload: " + (data.message || "error"));
+    }
+  });
+
+  document.getElementById("btn-add")?.addEventListener("click", () => {
+    fId.value = "";
+    fTitle.value = "";
+    fSlug.value = "";
+    fCategory.value = "";
+    fAuthor.value = "";
+    fThumbUrl.value = "";
+    fContent.value = "";
+    fPublished.checked = false;
+    previewThumb.classList.add("hidden");
+    openModal(false);
+  });
+
+  document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
+
+  document.querySelectorAll(".btn-edit").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const el = btn as HTMLButtonElement;
+      fId.value = el.dataset.id || "";
+      fTitle.value = el.dataset.title || "";
+      fSlug.value = el.dataset.slug || "";
+      fCategory.value = el.dataset.category || "";
+      fAuthor.value = el.dataset.author || "";
+      fThumbUrl.value = el.dataset.thumbnail || "";
+      fContent.value = el.dataset.content || "";
+      fPublished.checked = el.dataset.published === "true";
+      if (el.dataset.thumbnail) {
+        previewThumb.src = el.dataset.thumbnail;
+        previewThumb.classList.remove("hidden");
+      } else {
+        previewThumb.classList.add("hidden");
+      }
+      openModal(true);
+    });
+  });
+
+  document.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Yakin hapus artikel ini?")) return;
+      const id = (btn as HTMLButtonElement).dataset.id;
+      const res = await fetch(`/api/admin/artikel/${id}`, { method: "DELETE" });
+      if (res.ok) location.reload();
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+
+    const payload = {
+      title: fTitle.value,
+      slug: fSlug.value,
+      category: fCategory.value,
+      author: fAuthor.value,
+      thumbnail: fThumbUrl.value,
+      content: fContent.value,
+      isPublished: fPublished.checked,
+    };
+
+    const isEdit = !!fId.value;
+    const url = isEdit ? `/api/admin/artikel/${fId.value}` : "/api/admin/artikel";
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        errorBox.textContent = data.message || "Gagal menyimpan data";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+      location.reload();
+    } catch {
+      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.classList.remove("hidden");
+    }
+  });
+</script>

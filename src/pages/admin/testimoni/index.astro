@@ -1,0 +1,229 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const testimoniList = await prisma.testimoni.findMany({ orderBy: { orderIndex: "asc" } });
+---
+
+<AdminLayout title="Testimoni">
+  <div class="flex justify-between items-center mb-5">
+    <p class="text-sm text-neutral-dark/60">Kelola testimoni peserta yang tampil di halaman publik.</p>
+    <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
+      + Tambah Testimoni
+    </button>
+  </div>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+          <th class="px-5 py-3 font-medium">Nama</th>
+          <th class="px-5 py-3 font-medium">Asal</th>
+          <th class="px-5 py-3 font-medium">Pesan</th>
+          <th class="px-5 py-3 font-medium">Status</th>
+          <th class="px-5 py-3 font-medium text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {testimoniList.map((t) => (
+          <tr class="border-b border-neutral-gray last:border-0">
+            <td class="px-5 py-3 text-neutral-dark">{t.nama}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{t.asal ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70 max-w-xs truncate">{t.pesan}</td>
+            <td class="px-5 py-3">
+              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${t.isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/60"}`}>
+                {t.isActive ? "Aktif" : "Nonaktif"}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <button
+                class="btn-edit text-primary text-xs font-medium mr-3"
+                data-id={t.id}
+                data-nama={t.nama}
+                data-asal={t.asal ?? ""}
+                data-pesan={t.pesan}
+                data-foto={t.fotoUrl ?? ""}
+                data-rating={t.rating ?? 5}
+                data-order={t.orderIndex}
+                data-active={String(t.isActive)}
+              >Edit</button>
+              <button class="btn-delete text-red-500 text-xs font-medium" data-id={t.id}>Hapus</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {testimoniList.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada testimoni.</p>
+    )}
+  </div>
+
+  <div id="modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div class="bg-neutral-white rounded-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <h2 id="modal-title" class="font-heading font-semibold text-lg text-neutral-dark mb-4">Tambah Testimoni</h2>
+      <form id="form-testimoni" class="flex flex-col gap-3">
+        <input type="hidden" id="f-id" />
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Nama</label>
+          <input id="f-nama" required class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Asal (Sekolah/Peran)</label>
+          <input id="f-asal" placeholder="Cth: Siswa SDN 1 Kediri" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Pesan</label>
+          <textarea id="f-pesan" required rows="3" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Foto (opsional)</label>
+          <input type="file" id="f-foto-file" accept="image/*" class="w-full text-sm" />
+          <input type="hidden" id="f-foto-url" />
+          <img id="preview-foto" class="mt-2 rounded-lg max-h-28 hidden" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Rating (1-5)</label>
+          <input id="f-rating" type="number" min="1" max="5" value="5" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Urutan</label>
+          <input id="f-order" type="number" value="0" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+        </div>
+        <label class="flex items-center gap-2 text-sm text-neutral-dark">
+          <input id="f-active" type="checkbox" checked />
+          Aktif
+        </label>
+
+        <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
+
+        <div class="flex justify-end gap-2 mt-2">
+          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/60 hover:bg-neutral-gray rounded-lg">Batal</button>
+          <button type="submit" class="px-4 py-2 text-sm bg-primary text-neutral-white rounded-lg hover:opacity-90">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const modal = document.getElementById("modal") as HTMLDivElement;
+  const modalTitle = document.getElementById("modal-title") as HTMLHeadingElement;
+  const form = document.getElementById("form-testimoni") as HTMLFormElement;
+  const errorBox = document.getElementById("form-error") as HTMLDivElement;
+
+  const fId = document.getElementById("f-id") as HTMLInputElement;
+  const fNama = document.getElementById("f-nama") as HTMLInputElement;
+  const fAsal = document.getElementById("f-asal") as HTMLInputElement;
+  const fPesan = document.getElementById("f-pesan") as HTMLTextAreaElement;
+  const fFotoUrl = document.getElementById("f-foto-url") as HTMLInputElement;
+  const fRating = document.getElementById("f-rating") as HTMLInputElement;
+  const fOrder = document.getElementById("f-order") as HTMLInputElement;
+  const fActive = document.getElementById("f-active") as HTMLInputElement;
+  const previewFoto = document.getElementById("preview-foto") as HTMLImageElement;
+
+  function openModal(isEdit = false) {
+    errorBox.classList.add("hidden");
+    modalTitle.textContent = isEdit ? "Edit Testimoni" : "Tambah Testimoni";
+    modal.classList.remove("hidden");
+  }
+
+  document.getElementById("f-foto-file")?.addEventListener("change", async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+    const data = await res.json();
+    if (data.url) {
+      fFotoUrl.value = data.url;
+      previewFoto.src = data.url;
+      previewFoto.classList.remove("hidden");
+    } else {
+      alert("Gagal upload: " + (data.message || "error"));
+    }
+  });
+
+  document.getElementById("btn-add")?.addEventListener("click", () => {
+    fId.value = "";
+    fNama.value = "";
+    fAsal.value = "";
+    fPesan.value = "";
+    fFotoUrl.value = "";
+    fRating.value = "5";
+    fOrder.value = "0";
+    fActive.checked = true;
+    previewFoto.classList.add("hidden");
+    openModal(false);
+  });
+
+  document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
+
+  document.querySelectorAll(".btn-edit").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const el = btn as HTMLButtonElement;
+      fId.value = el.dataset.id || "";
+      fNama.value = el.dataset.nama || "";
+      fAsal.value = el.dataset.asal || "";
+      fPesan.value = el.dataset.pesan || "";
+      fFotoUrl.value = el.dataset.foto || "";
+      fRating.value = el.dataset.rating || "5";
+      fOrder.value = el.dataset.order || "0";
+      fActive.checked = el.dataset.active === "true";
+      if (el.dataset.foto) {
+        previewFoto.src = el.dataset.foto;
+        previewFoto.classList.remove("hidden");
+      } else {
+        previewFoto.classList.add("hidden");
+      }
+      openModal(true);
+    });
+  });
+
+  document.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Yakin hapus testimoni ini?")) return;
+      const id = (btn as HTMLButtonElement).dataset.id;
+      const res = await fetch(`/api/admin/testimoni/${id}`, { method: "DELETE" });
+      if (res.ok) location.reload();
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("hidden");
+
+    const payload = {
+      nama: fNama.value,
+      asal: fAsal.value,
+      pesan: fPesan.value,
+      fotoUrl: fFotoUrl.value,
+      rating: Number(fRating.value),
+      orderIndex: Number(fOrder.value),
+      isActive: fActive.checked,
+    };
+
+    const isEdit = !!fId.value;
+    const url = isEdit ? `/api/admin/testimoni/${fId.value}` : "/api/admin/testimoni";
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        errorBox.textContent = data.message || "Gagal menyimpan data";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+      location.reload();
+    } catch {
+      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.classList.remove("hidden");
+    }
+  });
+</script>

@@ -1,0 +1,116 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { prisma } from "../../../lib/prisma";
+
+export const prerender = false;
+
+const invoices = await prisma.invoice.findMany({
+  where: { status: { in: ["menunggu_verifikasi", "terverifikasi", "ditolak"] } },
+  include: { pendaftaran: { include: { wilayah: true, gelombang: true } } },
+  orderBy: { createdAt: "desc" },
+});
+
+function formatRupiah(n: number) {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
+}
+
+const statusColor: Record<string, string> = {
+  menunggu_verifikasi: "bg-amber-100 text-amber-700",
+  terverifikasi: "bg-emerald-100 text-emerald-700",
+  ditolak: "bg-red-100 text-red-700",
+};
+
+const statusLabel: Record<string, string> = {
+  menunggu_verifikasi: "Menunggu Verifikasi",
+  terverifikasi: "Terverifikasi",
+  ditolak: "Ditolak",
+};
+---
+
+<AdminLayout title="Pembayaran">
+  <p class="text-sm text-neutral-dark/60 mb-5">Verifikasi bukti pembayaran yang dikirim peserta.</p>
+
+  <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+          <th class="px-5 py-3 font-medium">Invoice</th>
+          <th class="px-5 py-3 font-medium">Nama Siswa</th>
+          <th class="px-5 py-3 font-medium">Wilayah</th>
+          <th class="px-5 py-3 font-medium">Tagihan</th>
+          <th class="px-5 py-3 font-medium">Bukti</th>
+          <th class="px-5 py-3 font-medium">Status</th>
+          <th class="px-5 py-3 font-medium text-right">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {invoices.map((inv) => (
+          <tr class="border-b border-neutral-gray last:border-0" data-id={inv.id}>
+            <td class="px-5 py-3 text-neutral-dark font-medium">{inv.invoiceCode}</td>
+            <td class="px-5 py-3 text-neutral-dark">{inv.pendaftaran.namaSiswa}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{inv.pendaftaran.wilayah?.nama ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">{formatRupiah(Number(inv.jumlahTagihan))}</td>
+            <td class="px-5 py-3">
+              {inv.buktiPembayaranUrl ? (
+                <a href={inv.buktiPembayaranUrl} target="_blank" class="text-primary text-xs underline">Lihat Bukti</a>
+              ) : (
+                <span class="text-neutral-dark/40 text-xs">Belum ada</span>
+              )}
+            </td>
+            <td class="px-5 py-3">
+              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColor[inv.status]}`}>
+                {statusLabel[inv.status]}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-right">
+              {inv.status === "menunggu_verifikasi" && (
+                <>
+                  <button class="btn-verify text-emerald-600 text-xs font-medium mr-3" data-id={inv.id}>Terima</button>
+                  <button class="btn-reject text-red-500 text-xs font-medium" data-id={inv.id}>Tolak</button>
+                </>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {invoices.length === 0 && (
+      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada pembayaran masuk.</p>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  async function updateStatus(id: string, action: string) {
+    const res = await fetch(`/api/admin/pembayaran/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    if (res.ok) location.reload();
+    else alert("Gagal memproses");
+  }
+
+  document.querySelectorAll(".btn-verify").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (confirm("Konfirmasi pembayaran ini sudah diterima?")) {
+        updateStatus((btn as HTMLButtonElement).dataset.id!, "verify");
+      }
+    });
+  });
+
+  document.querySelectorAll(".btn-reject").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const catatan = prompt("Catatan penolakan untuk peserta (contoh: Nominal transfer tidak sesuai):");
+    if (catatan === null) return; // batal
+    const id = (btn as HTMLButtonElement).dataset.id!;
+    const res = await fetch(`/api/admin/pembayaran/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "reject", catatan }),
+    });
+    if (res.ok) location.reload();
+    else alert("Gagal memproses");
+  });
+});
+</script>

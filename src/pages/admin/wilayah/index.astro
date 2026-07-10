@@ -10,10 +10,7 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
 <AdminLayout title="Wilayah">
   <div class="flex justify-between items-center mb-5">
     <p class="text-sm text-neutral-dark/60">Kelola daftar wilayah yang tampil di halaman pendaftaran.</p>
-    <button
-      id="btn-add"
-      class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-    >
+    <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
       + Tambah Wilayah
     </button>
   </div>
@@ -22,15 +19,23 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
     <table class="w-full text-sm">
       <thead>
         <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+          <th class="px-5 py-3 font-medium">Logo</th>
           <th class="px-5 py-3 font-medium">Nama</th>
           <th class="px-5 py-3 font-medium">Region</th>
           <th class="px-5 py-3 font-medium">Status</th>
           <th class="px-5 py-3 font-medium text-right">Aksi</th>
         </tr>
       </thead>
-      <tbody id="table-body">
+      <tbody>
         {wilayahList.map((w) => (
           <tr class="border-b border-neutral-gray last:border-0" data-id={w.id}>
+            <td class="px-5 py-3">
+              {w.logoUrl ? (
+                <img src={w.logoUrl} alt={w.nama} class="w-10 h-10 object-contain rounded" />
+              ) : (
+                <span class="text-neutral-300 text-2xl">🖼️</span>
+              )}
+            </td>
             <td class="px-5 py-3 text-neutral-dark">{w.nama}</td>
             <td class="px-5 py-3 text-neutral-dark/70">{w.region ?? "-"}</td>
             <td class="px-5 py-3">
@@ -45,22 +50,18 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
                 data-nama={w.nama}
                 data-region={w.region ?? ""}
                 data-deskripsi={w.deskripsi ?? ""}
+                data-logo={w.logoUrl ?? ""}
                 data-order={w.orderIndex}
                 data-active={String(w.isActive)}
               >
                 Edit
               </button>
-              <button class="btn-delete text-red-500 text-xs font-medium" data-id={w.id}>
-                Hapus
-              </button>
+              <button class="btn-delete text-red-500 text-xs font-medium" data-id={w.id}>Hapus</button>
             </td>
           </tr>
         ))}
       </tbody>
     </table>
-    {wilayahList.length === 0 && (
-      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada data wilayah.</p>
-    )}
   </div>
 
   <!-- Modal -->
@@ -69,28 +70,35 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
       <h2 id="modal-title" class="font-heading font-semibold text-lg text-neutral-dark mb-4">Tambah Wilayah</h2>
       <form id="form-wilayah" class="flex flex-col gap-3">
         <input type="hidden" id="f-id" />
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Nama Wilayah</label>
           <input id="f-nama" required class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+
+        <!-- Upload Logo -->
         <div>
-  <label class="block text-sm font-medium text-neutral-dark mb-1">Logo/Foto Wilayah</label>
-  <input type="file" id="f-logo-file" accept="image/*" class="w-full text-sm" />
-  <input type="hidden" id="f-logo-url" />
-  <img id="preview-logo" class="mt-2 rounded-lg max-h-32 hidden" />
-</div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Logo/Foto Wilayah</label>
+          <input type="file" id="f-logo-file" accept="image/*" class="w-full text-sm" />
+          <input type="hidden" id="f-logo-url" />
+          <img id="preview-logo" class="mt-2 rounded-lg max-h-32 hidden" />
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Region</label>
           <input id="f-region" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Deskripsi</label>
           <textarea id="f-deskripsi" rows="3" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
         </div>
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Urutan</label>
           <input id="f-order" type="number" value="0" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+
         <label class="flex items-center gap-2 text-sm text-neutral-dark">
           <input id="f-active" type="checkbox" checked />
           Aktif
@@ -119,19 +127,16 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
   const fDeskripsi = document.getElementById("f-deskripsi") as HTMLTextAreaElement;
   const fOrder = document.getElementById("f-order") as HTMLInputElement;
   const fActive = document.getElementById("f-active") as HTMLInputElement;
-  
+  const fLogoUrl = document.getElementById("f-logo-url") as HTMLInputElement;
+  const previewLogo = document.getElementById("preview-logo") as HTMLImageElement;
 
   function openModal(isEdit = false) {
     errorBox.classList.add("hidden");
     modalTitle.textContent = isEdit ? "Edit Wilayah" : "Tambah Wilayah";
     modal.classList.remove("hidden");
   }
-  function closeModal() {
-    modal.classList.add("hidden");
-    form.reset();
-    fId.value = "";
-  }
 
+  // Tambah
   document.getElementById("btn-add")?.addEventListener("click", () => {
     fId.value = "";
     fNama.value = "";
@@ -139,11 +144,14 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
     fDeskripsi.value = "";
     fOrder.value = "0";
     fActive.checked = true;
+    fLogoUrl.value = "";
+    previewLogo.classList.add("hidden");
     openModal(false);
   });
 
-  document.getElementById("btn-cancel")?.addEventListener("click", closeModal);
+  document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
 
+  // Edit
   document.querySelectorAll(".btn-edit").forEach((btn) => {
     btn.addEventListener("click", () => {
       const el = btn as HTMLButtonElement;
@@ -153,20 +161,43 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
       fDeskripsi.value = el.dataset.deskripsi || "";
       fOrder.value = el.dataset.order || "0";
       fActive.checked = el.dataset.active === "true";
+      fLogoUrl.value = el.dataset.logo || "";
+
+      if (el.dataset.logo) {
+        previewLogo.src = el.dataset.logo;
+        previewLogo.classList.remove("hidden");
+      } else {
+        previewLogo.classList.add("hidden");
+      }
       openModal(true);
     });
   });
 
-  document.querySelectorAll(".btn-delete").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (!confirm("Yakin hapus wilayah ini?")) return;
-      const id = (btn as HTMLButtonElement).dataset.id;
-      const res = await fetch(`/api/admin/wilayah/${id}`, { method: "DELETE" });
-      if (res.ok) location.reload();
-      else alert("Gagal menghapus data");
-    });
+  // Upload Logo
+  document.getElementById("f-logo-file")?.addEventListener("change", async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("file", file);
+
+    try {
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+
+      if (data.url) {
+        fLogoUrl.value = data.url;
+        previewLogo.src = data.url;
+        previewLogo.classList.remove("hidden");
+      } else {
+        alert("Gagal upload logo");
+      }
+    } catch {
+      alert("Terjadi kesalahan saat upload");
+    }
   });
 
+  // Submit
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorBox.classList.add("hidden");
@@ -175,6 +206,7 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
       nama: fNama.value,
       region: fRegion.value,
       deskripsi: fDeskripsi.value,
+      logoUrl: fLogoUrl.value || null,
       orderIndex: Number(fOrder.value),
       isActive: fActive.checked,
     };
@@ -189,15 +221,16 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       if (!res.ok) {
         const data = await res.json();
-        errorBox.textContent = data.message || "Gagal menyimpan data";
+        errorBox.textContent = data.message || "Gagal menyimpan";
         errorBox.classList.remove("hidden");
         return;
       }
       location.reload();
     } catch {
-      errorBox.textContent = "Terjadi kesalahan, coba lagi.";
+      errorBox.textContent = "Terjadi kesalahan";
       errorBox.classList.remove("hidden");
     }
   });
