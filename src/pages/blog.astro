@@ -51,7 +51,7 @@ const [featured, ...rest] = articles;
 
   <section class="max-w-6xl mx-auto px-6 py-16">
     {articles.length === 0 ? (
-      <p class="text-center text-neutral-dark/50 py-10">Belum ada artikel yang dipublish.</p>
+      <p class="text-center text-neutral-dark/65 py-10">Belum ada artikel yang dipublish.</p>
     ) : (
       <>
         {featured && (
@@ -77,8 +77,8 @@ const [featured, ...rest] = articles;
               <h2 class="font-heading text-2xl font-bold text-neutral-dark mb-3 group-hover:text-primary transition-colors">
                 {featured.title}
               </h2>
-              <p class="text-neutral-dark/60 text-sm leading-relaxed mb-4">{excerpt(featured.content, 200)}</p>
-              {featured.author && <p class="text-xs text-neutral-dark/50">Oleh {featured.author}</p>}
+              <p class="text-neutral-dark/70 text-sm leading-relaxed mb-4">{excerpt(featured.content, 200)}</p>
+              {featured.author && <p class="text-xs text-neutral-dark/65">Oleh {featured.author}</p>}
             </div>
           </a>
         )}
@@ -108,7 +108,7 @@ const [featured, ...rest] = articles;
                   <h3 class="font-heading font-semibold text-neutral-dark leading-snug mb-2 group-hover:text-primary transition-colors">
                     {post.title}
                   </h3>
-                  <p class="text-sm text-neutral-dark/60 leading-relaxed">{excerpt(post.content)}</p>
+                  <p class="text-sm text-neutral-dark/70 leading-relaxed">{excerpt(post.content)}</p>
                 </div>
               </a>
             ))}

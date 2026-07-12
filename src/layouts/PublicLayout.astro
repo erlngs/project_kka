@@ -2,10 +2,14 @@
 import Navbar from "../components/public/Navbar.astro";
 import Footer from "../components/public/Footer.astro";
 import PendingInvoiceBanner from "../components/public/PendingInvoiceBanner.astro";
+import MobileBottomNav from "../components/public/MobileBottomNav.astro";
 import "../styles/global.css";
 
-interface Props { title: string; }
-const { title } = Astro.props;
+interface Props {
+  title: string;
+  description?: string | null;
+}
+const { title, description } = Astro.props;
 ---
 <!doctype html>
 <html lang="id">
@@ -13,13 +17,16 @@ const { title } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} | KKA Radar Kediri</title>
+    <meta name="description" content={description ?? "Kompetisi Kompetensi Akademik (KKA) 2026 oleh Jawa Pos Radar Kediri untuk siswa SD/MI, SMP/MTs, SMA/MA/SMK se-Karesidenan Kediri."} />
+    <link rel="canonical" href={Astro.url.href} />
   </head>
-  <body class="font-body text-neutral-dark">
+  <body class="font-body text-neutral-dark pb-16 md:pb-0">
     <PendingInvoiceBanner />
     <Navbar />
     <main>
       <slot />
     </main>
     <Footer />
+    <MobileBottomNav />
   </body>
 </html>

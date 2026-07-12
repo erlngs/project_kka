@@ -40,7 +40,7 @@ function formatRupiah(n: number) {
         </svg>
       </div>
       <h1 class="font-heading text-xl font-bold text-neutral-dark">Pendaftaran Berhasil!</h1>
-      <p class="text-sm text-neutral-dark/60 mt-1">Selesaikan pembayaran untuk mengonfirmasi pendaftaranmu.</p>
+      <p class="text-sm text-neutral-dark/70 mt-1">Selesaikan pembayaran untuk mengonfirmasi pendaftaranmu.</p>
     </div>
 
     <!-- Invoice Summary Card -->
@@ -55,7 +55,7 @@ function formatRupiah(n: number) {
 
 <div class="bg-neutral-white rounded-xl shadow-sm p-6 mb-6">
   <div class="flex justify-between items-center border-b border-neutral-gray pb-4 mb-4">
-    <span class="text-sm text-neutral-dark/60">Kode Invoice</span>
+    <span class="text-sm text-neutral-dark/70">Kode Invoice</span>
     <div class="flex items-center gap-2">
       <span id="invoice-code-text" class="font-heading font-bold text-primary">{invoice.invoiceCode}</span>
       <button
@@ -73,15 +73,15 @@ function formatRupiah(n: number) {
       
       <div class="flex flex-col gap-2 text-sm">
         <div class="flex justify-between">
-          <span class="text-neutral-dark/60">Nama Siswa</span>
+          <span class="text-neutral-dark/70">Nama Siswa</span>
           <span class="text-neutral-dark font-medium">{invoice.pendaftaran.namaSiswa}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-neutral-dark/60">Wilayah</span>
+          <span class="text-neutral-dark/70">Wilayah</span>
           <span class="text-neutral-dark">{invoice.pendaftaran.wilayah?.nama ?? "-"}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-neutral-dark/60">Gelombang</span>
+          <span class="text-neutral-dark/70">Gelombang</span>
           <span class="text-neutral-dark">{invoice.pendaftaran.gelombang?.nama ?? "-"}</span>
         </div>
         
@@ -112,15 +112,15 @@ function formatRupiah(n: number) {
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
           <p class="text-sm font-medium text-neutral-dark mb-2">Transfer ke rekening berikut:</p>
           <div class="flex justify-between text-sm">
-            <span class="text-neutral-dark/60">Bank</span>
+            <span class="text-neutral-dark/70">Bank</span>
             <span class="text-neutral-dark font-medium">{rekening.bankNama}</span>
           </div>
           <div class="flex justify-between text-sm mt-1">
-            <span class="text-neutral-dark/60">No. Rekening</span>
+            <span class="text-neutral-dark/70">No. Rekening</span>
             <span class="text-neutral-dark font-bold">{rekening.bankNorek}</span>
           </div>
           <div class="flex justify-between text-sm mt-1">
-            <span class="text-neutral-dark/60">Atas Nama</span>
+            <span class="text-neutral-dark/70">Atas Nama</span>
             <span class="text-neutral-dark font-medium">{rekening.bankAtasNama}</span>
           </div>
         </div>

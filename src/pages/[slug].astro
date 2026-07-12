@@ -16,8 +16,7 @@ const page = await prisma.page.findUnique({
 });
 
 if (!page || !page.isPublished) {
-  Astro.response.status = 404;
-  throw new Error("Page not found");
+  return new Response(null, { status: 404 });
 }
 
 const cardIcons: Record<string, string> = {
@@ -30,7 +29,7 @@ const cardIcons: Record<string, string> = {
 };
 ---
 
-<PublicLayout title={page.title}>
+<PublicLayout title={page.title} description={page.metaDescription ?? page.heroSubtitle}>
 
   <!-- HERO BANNER - VERSI DEBUG -->
   <section class="relative h-[420px] md:h-[520px] flex items-center justify-center text-center overflow-hidden bg-neutral-800">
@@ -81,7 +80,7 @@ const cardIcons: Record<string, string> = {
           return (
             <figure class="mb-8">
               <img src={c.image_url} alt={c.alt || ""} class="rounded-xl w-full" />
-              {c.caption && <figcaption class="text-center text-sm text-neutral-dark/60 mt-2">{c.caption}</figcaption>}
+              {c.caption && <figcaption class="text-center text-sm text-neutral-dark/70 mt-2">{c.caption}</figcaption>}
             </figure>
           );
 

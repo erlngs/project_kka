@@ -28,12 +28,12 @@ const statusLabel: Record<string, string> = {
 ---
 
 <AdminLayout title="Pembayaran">
-  <p class="text-sm text-neutral-dark/60 mb-5">Verifikasi bukti pembayaran yang dikirim peserta.</p>
+  <p class="text-sm text-neutral-dark/70 mb-5">Verifikasi bukti pembayaran yang dikirim peserta.</p>
 
   <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
     <table class="w-full text-sm">
       <thead>
-        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+        <tr class="text-left text-neutral-dark/65 border-b border-neutral-gray">
           <th class="px-5 py-3 font-medium">Invoice</th>
           <th class="px-5 py-3 font-medium">Nama Siswa</th>
           <th class="px-5 py-3 font-medium">Wilayah</th>
@@ -75,7 +75,7 @@ const statusLabel: Record<string, string> = {
       </tbody>
     </table>
     {invoices.length === 0 && (
-      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada pembayaran masuk.</p>
+      <p class="text-sm text-neutral-dark/65 px-5 py-8 text-center">Belum ada pembayaran masuk.</p>
     )}
   </div>
 </AdminLayout>

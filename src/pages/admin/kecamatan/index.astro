@@ -13,7 +13,7 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
 
 <AdminLayout title="Kecamatan">
   <div class="flex justify-between items-center mb-5">
-    <p class="text-sm text-neutral-dark/60">Kelola daftar kecamatan per wilayah, dipakai di form pendaftaran.</p>
+    <p class="text-sm text-neutral-dark/70">Kelola daftar kecamatan per wilayah, dipakai di form pendaftaran.</p>
     <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
       + Tambah Kecamatan
     </button>
@@ -22,7 +22,7 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
   <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
     <table class="w-full text-sm">
       <thead>
-        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+        <tr class="text-left text-neutral-dark/65 border-b border-neutral-gray">
           <th class="px-5 py-3 font-medium">Kecamatan</th>
           <th class="px-5 py-3 font-medium">Wilayah</th>
           <th class="px-5 py-3 font-medium text-right">Aksi</th>
@@ -47,7 +47,7 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
       </tbody>
     </table>
     {kecamatanList.length === 0 && (
-      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada kecamatan.</p>
+      <p class="text-sm text-neutral-dark/65 px-5 py-8 text-center">Belum ada kecamatan.</p>
     )}
   </div>
 
@@ -71,7 +71,7 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
         <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
 
         <div class="flex justify-end gap-2 mt-2">
-          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/60 hover:bg-neutral-gray rounded-lg">Batal</button>
+          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/70 hover:bg-neutral-gray rounded-lg">Batal</button>
           <button type="submit" class="px-4 py-2 text-sm bg-primary text-neutral-white rounded-lg hover:opacity-90">Simpan</button>
         </div>
       </form>

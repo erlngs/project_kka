@@ -44,9 +44,9 @@ const menu = await prisma.navMenu.findMany({
     </div>
 
     <div>
-  <h4 class="font-heading font-semibold mb-3 text-sm">
+  <h3 class="font-heading font-semibold mb-3 text-sm">
     Tautan
-  </h4>
+  </h3>
 
   <ul class="text-sm text-neutral-white/60 flex flex-col gap-2">
     {menu.map((item) => {
@@ -67,9 +67,9 @@ const menu = await prisma.navMenu.findMany({
 </div>
 
     <div>
-      <h4 class="font-heading font-semibold mb-3 text-sm">
+      <h3 class="font-heading font-semibold mb-3 text-sm">
         Kontak
-      </h4>
+      </h3>
 
       <p class="text-sm text-neutral-white/60">
         WhatsApp: {footer?.whatsapp}

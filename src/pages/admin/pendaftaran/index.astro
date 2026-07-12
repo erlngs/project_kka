@@ -23,7 +23,7 @@ const statusColor: Record<string, string> = {
   menunggu_verifikasi: "bg-blue-100 text-blue-700",
   lunas: "bg-emerald-100 text-emerald-700",
   ditolak: "bg-red-100 text-red-700",
-  dibatalkan: "bg-neutral-200 text-neutral-dark/60",
+  dibatalkan: "bg-neutral-200 text-neutral-dark/70",
 };
 
 const jenjangLabel: Record<string, string> = {
@@ -35,7 +35,7 @@ const jenjangLabel: Record<string, string> = {
 
 <AdminLayout title="Pendaftaran">
   <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
-    <p class="text-sm text-neutral-dark/60">Total {pendaftaranList.length} data pendaftaran.</p>
+    <p class="text-sm text-neutral-dark/70">Total {pendaftaranList.length} data pendaftaran.</p>
     <form method="get" class="flex gap-2">
       <select name="status" class="px-3 py-2 border border-neutral-200 rounded-lg text-sm" onchange="this.form.submit()">
         <option value="">Semua Status</option>
@@ -54,7 +54,7 @@ const jenjangLabel: Record<string, string> = {
   <div class="bg-neutral-white rounded-xl shadow-sm overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
-        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray whitespace-nowrap">
+        <tr class="text-left text-neutral-dark/65 border-b border-neutral-gray whitespace-nowrap">
           <th class="px-5 py-3 font-medium">Nama Siswa</th>
           <th class="px-5 py-3 font-medium">NISN</th>
           <th class="px-5 py-3 font-medium">WA</th>
@@ -87,7 +87,7 @@ const jenjangLabel: Record<string, string> = {
       </tbody>
     </table>
     {pendaftaranList.length === 0 && (
-      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada data pendaftaran.</p>
+      <p class="text-sm text-neutral-dark/65 px-5 py-8 text-center">Belum ada data pendaftaran.</p>
     )}
   </div>
 </AdminLayout>

@@ -54,7 +54,7 @@ const relatedArticles = await prisma.article.findMany({
   <article class="max-w-3xl mx-auto px-6 py-16">
     <a
       href="/blog"
-      class="inline-flex items-center gap-1.5 font-body text-sm text-neutral-dark/60 hover:text-primary transition-colors mb-8"
+      class="inline-flex items-center gap-1.5 font-body text-sm text-neutral-dark/70 hover:text-primary transition-colors mb-8"
     >
       <svg
         width="16"
@@ -85,7 +85,7 @@ const relatedArticles = await prisma.article.findMany({
         {article.title}
       </h1>
 
-      <div class="mt-4 flex items-center gap-2 font-body text-sm text-neutral-dark/50">
+      <div class="mt-4 flex items-center gap-2 font-body text-sm text-neutral-dark/65">
         {article.author && <span>{article.author}</span>}
 
         {article.author && <span>•</span>}
@@ -127,7 +127,7 @@ const relatedArticles = await prisma.article.findMany({
               </h3>
 
               {related.publishedAt && (
-                <p class="mt-2 text-xs text-neutral-dark/50">
+                <p class="mt-2 text-xs text-neutral-dark/65">
                   {formatDate(related.publishedAt)}
                 </p>
               )}

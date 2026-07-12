@@ -8,7 +8,7 @@ const pesanList = await prisma.pesan.findMany({ orderBy: { createdAt: "desc" } }
 ---
 
 <AdminLayout title="Pesan">
-  <p class="text-sm text-neutral-dark/60 mb-5">Pesan masuk dari form kontak website.</p>
+  <p class="text-sm text-neutral-dark/70 mb-5">Pesan masuk dari form kontak website.</p>
 
   <div class="flex flex-col gap-3">
     {pesanList.map((p) => (
@@ -16,7 +16,7 @@ const pesanList = await prisma.pesan.findMany({ orderBy: { createdAt: "desc" } }
         <div class="flex justify-between items-start mb-2">
           <div>
             <p class="font-medium text-neutral-dark">{p.nama}</p>
-            <p class="text-xs text-neutral-dark/50">{p.email} {p.telepon ? `• ${p.telepon}` : ""}</p>
+            <p class="text-xs text-neutral-dark/65">{p.email} {p.telepon ? `• ${p.telepon}` : ""}</p>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-xs text-neutral-dark/40">{new Date(p.createdAt).toLocaleString("id-ID")}</span>
@@ -29,7 +29,7 @@ const pesanList = await prisma.pesan.findMany({ orderBy: { createdAt: "desc" } }
       </div>
     ))}
     {pesanList.length === 0 && (
-      <p class="text-sm text-neutral-dark/50 text-center py-10 bg-neutral-white rounded-xl">Belum ada pesan masuk.</p>
+      <p class="text-sm text-neutral-dark/65 text-center py-10 bg-neutral-white rounded-xl">Belum ada pesan masuk.</p>
     )}
   </div>
 </AdminLayout>

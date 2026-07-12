@@ -9,7 +9,7 @@ const testimoniList = await prisma.testimoni.findMany({ orderBy: { orderIndex: "
 
 <AdminLayout title="Testimoni">
   <div class="flex justify-between items-center mb-5">
-    <p class="text-sm text-neutral-dark/60">Kelola testimoni peserta yang tampil di halaman publik.</p>
+    <p class="text-sm text-neutral-dark/70">Kelola testimoni peserta yang tampil di halaman publik.</p>
     <button id="btn-add" class="bg-primary text-neutral-white text-sm font-medium px-4 py-2.5 rounded-lg hover:opacity-90">
       + Tambah Testimoni
     </button>
@@ -18,7 +18,7 @@ const testimoniList = await prisma.testimoni.findMany({ orderBy: { orderIndex: "
   <div class="bg-neutral-white rounded-xl shadow-sm overflow-hidden">
     <table class="w-full text-sm">
       <thead>
-        <tr class="text-left text-neutral-dark/50 border-b border-neutral-gray">
+        <tr class="text-left text-neutral-dark/65 border-b border-neutral-gray">
           <th class="px-5 py-3 font-medium">Nama</th>
           <th class="px-5 py-3 font-medium">Asal</th>
           <th class="px-5 py-3 font-medium">Pesan</th>
@@ -33,7 +33,7 @@ const testimoniList = await prisma.testimoni.findMany({ orderBy: { orderIndex: "
             <td class="px-5 py-3 text-neutral-dark/70">{t.asal ?? "-"}</td>
             <td class="px-5 py-3 text-neutral-dark/70 max-w-xs truncate">{t.pesan}</td>
             <td class="px-5 py-3">
-              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${t.isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/60"}`}>
+              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${t.isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/70"}`}>
                 {t.isActive ? "Aktif" : "Nonaktif"}
               </span>
             </td>
@@ -56,7 +56,7 @@ const testimoniList = await prisma.testimoni.findMany({ orderBy: { orderIndex: "
       </tbody>
     </table>
     {testimoniList.length === 0 && (
-      <p class="text-sm text-neutral-dark/50 px-5 py-8 text-center">Belum ada testimoni.</p>
+      <p class="text-sm text-neutral-dark/65 px-5 py-8 text-center">Belum ada testimoni.</p>
     )}
   </div>
 
@@ -99,7 +99,7 @@ const testimoniList = await prisma.testimoni.findMany({ orderBy: { orderIndex: "
         <div id="form-error" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2"></div>
 
         <div class="flex justify-end gap-2 mt-2">
-          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/60 hover:bg-neutral-gray rounded-lg">Batal</button>
+          <button type="button" id="btn-cancel" class="px-4 py-2 text-sm text-neutral-dark/70 hover:bg-neutral-gray rounded-lg">Batal</button>
           <button type="submit" class="px-4 py-2 text-sm bg-primary text-neutral-white rounded-lg hover:opacity-90">Simpan</button>
         </div>
       </form>
