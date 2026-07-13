@@ -89,6 +89,22 @@ gelombangAktif?.biaya.forEach((b) => (biayaMap[b.jenjang] = Number(b.harga)));
   const siswaListEl = document.getElementById("siswa-list");
   let siswaCount = 0;
 
+  const kelasOptions = {
+  SD_MI: ["4", "5", "6"],
+  SMP_MTS: ["7", "8", "9"],
+  SMA_MA_SMK: ["10", "11", "12"],
+};
+
+function updateKelasOptions(row) {
+  const jenjang = row.querySelector(".f-jenjang").value;
+  const kelasSelect = row.querySelector(".f-kelas");
+  const opts = kelasOptions[jenjang] || [];
+  kelasSelect.innerHTML = opts.length
+    ? '<option value="">-- Pilih Kelas --</option>' +
+      opts.map((k) => `<option value="${k}">Kelas ${k}</option>`).join("")
+    : '<option value="">-- Pilih Jenjang dulu --</option>';
+}
+
   function siswaTemplate(index) {
     return `
       <div class="siswa-row border border-neutral-gray rounded-lg p-4" data-index="${index}">
@@ -112,7 +128,9 @@ gelombangAktif?.biaya.forEach((b) => (biayaMap[b.jenjang] = Number(b.harga)));
             <option value="SMP_MTS">SMP/MTs</option>
             <option value="SMA_MA_SMK">SMA/MA/SMK</option>
           </select>
-          <input class="f-kelas px-3 py-2 border border-neutral-200 rounded-lg text-sm" placeholder="Kelas" />
+          <select class="f-kelas px-3 py-2 border border-neutral-200 rounded-lg text-sm">
+  <option value="">-- Pilih Jenjang dulu --</option>
+</select>
         </div>
       </div>
     `;
@@ -151,8 +169,11 @@ gelombangAktif?.biaya.forEach((b) => (biayaMap[b.jenjang] = Number(b.harga)));
 
   document.getElementById("btn-add-siswa")?.addEventListener("click", addSiswaRow);
   document.addEventListener("change", (e) => {
-    if (e.target.classList.contains("f-jenjang")) recalcTotal();
-  });
+  if (e.target.classList.contains("f-jenjang")) {
+    recalcTotal();
+    updateKelasOptions(e.target.closest(".siswa-row"));
+  }
+});
 
   // mulai dengan 2 baris siswa
   addSiswaRow();

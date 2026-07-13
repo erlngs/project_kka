@@ -39,10 +39,19 @@ export const POST: APIRoute = async ({ request }) => {
     },
   });
 
-  await prisma.pendaftaran.update({
-    where: { id: invoice.pendaftaranId },
-    data: { status: "menunggu_verifikasi" },
-  });
+  if (invoice.pendaftaranId) {
+    // Invoice individual/mandiri
+    await prisma.pendaftaran.update({
+      where: { id: invoice.pendaftaranId },
+      data: { status: "menunggu_verifikasi" },
+    });
+  } else if (invoice.batchId) {
+    // Invoice kolektif — update semua siswa dalam batch ini sekaligus
+    await prisma.pendaftaran.updateMany({
+      where: { batchId: invoice.batchId },
+      data: { status: "menunggu_verifikasi" },
+    });
+  }
 
   return new Response(JSON.stringify({ success: true }), { status: 200 });
 };

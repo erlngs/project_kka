@@ -12,7 +12,13 @@ const pendaftaranList = await prisma.pendaftaran.findMany({
     ...(filterStatus ? { status: filterStatus as any } : {}),
     ...(filterWilayah ? { wilayahId: filterWilayah } : {}),
   },
-  include: { wilayah: true, kecamatan: true, gelombang: true, invoice: true },
+  include: {
+    wilayah: true,
+    kecamatan: true,
+    gelombang: true,
+    invoice: true,
+    batch: { include: { invoice: true } },
+  },
   orderBy: { createdAt: "desc" },
 });
 
@@ -76,7 +82,10 @@ const jenjangLabel: Record<string, string> = {
             <td class="px-5 py-3 text-neutral-dark/70">{p.kecamatan?.nama ?? "-"}</td>
             <td class="px-5 py-3 text-neutral-dark/70">{jenjangLabel[p.jenjang ?? ""] ?? "-"}</td>
             <td class="px-5 py-3 text-neutral-dark/70">{p.gelombang?.nama ?? "-"}</td>
-            <td class="px-5 py-3 text-neutral-dark/70">{p.invoice?.invoiceCode ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark/70">
+  {p.invoice?.invoiceCode ?? p.batch?.invoice?.invoiceCode ?? "-"}
+  {p.batch && <span class="text-xs text-neutral-dark/40 ml-1">(Kolektif)</span>}
+</td>
             <td class="px-5 py-3">
               <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColor[p.status] ?? ""}`}>
                 {p.status}
