@@ -5,13 +5,44 @@ import { prisma } from "../../../lib/prisma";
 export const prerender = false;
 
 const invoices = await prisma.invoice.findMany({
-  where: { status: { in: ["menunggu_verifikasi", "terverifikasi", "ditolak"] } },
-  include: { pendaftaran: { include: { wilayah: true, gelombang: true } } },
-  orderBy: { createdAt: "desc" },
+  where: {
+    status: {
+      in: [
+        "menunggu_verifikasi",
+        "terverifikasi",
+        "ditolak",
+      ],
+    },
+  },
+
+  include: {
+    pendaftaran: {
+      include: {
+        wilayah: true,
+        gelombang: true,
+      },
+    },
+
+    batch: {
+      include: {
+        wilayah: true,
+        gelombang: true,
+        pendaftaran: true,
+      },
+    },
+  },
+
+  orderBy: {
+    createdAt: "desc",
+  },
 });
 
 function formatRupiah(n: number) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(Number(n));
 }
 
 const statusColor: Record<string, string> = {
@@ -47,8 +78,13 @@ const statusLabel: Record<string, string> = {
         {invoices.map((inv) => (
           <tr class="border-b border-neutral-gray last:border-0" data-id={inv.id}>
             <td class="px-5 py-3 text-neutral-dark font-medium">{inv.invoiceCode}</td>
-            <td class="px-5 py-3 text-neutral-dark">{inv.pendaftaran.namaSiswa}</td>
-            <td class="px-5 py-3 text-neutral-dark/70">{inv.pendaftaran.wilayah?.nama ?? "-"}</td>
+            <td class="px-5 py-3 text-neutral-dark">
+  {inv.batch ? inv.batch.namaKoordinator : inv.pendaftaran?.namaSiswa}
+  {inv.batch && <span class="text-xs text-primary ml-1">(Kolektif)</span>}
+</td>
+<td class="px-5 py-3 text-neutral-dark/70">
+  {inv.batch ? inv.batch.wilayah?.nama : inv.pendaftaran?.wilayah?.nama ?? "-"}
+</td>
             <td class="px-5 py-3 text-neutral-dark/70">{formatRupiah(Number(inv.jumlahTagihan))}</td>
             <td class="px-5 py-3">
               {inv.buktiPembayaranUrl ? (

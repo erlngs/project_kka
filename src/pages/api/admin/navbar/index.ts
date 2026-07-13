@@ -22,6 +22,7 @@ export const POST: APIRoute = async ({ request }) => {
       target: body.target,
       orderIndex: body.orderIndex ?? 0,
       isActive: body.isActive ?? true,
+      parentId: body.parentId || null, // BARU
     },
   });
 

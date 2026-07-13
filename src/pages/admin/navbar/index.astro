@@ -5,6 +5,12 @@ import { prisma } from "../../../lib/prisma";
 export const prerender = false;
 
 const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } });
+
+// BARU: ambil semua menu yang belum punya induk (parentId null), buat jadi pilihan "Menu Induk"
+const parentOptions = await prisma.navMenu.findMany({
+  where: { parentId: null },
+  orderBy: { orderIndex: "asc" },
+});
 ---
 
 <AdminLayout title="Navbar">
@@ -23,36 +29,42 @@ const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } 
           <th class="px-5 py-3 font-medium">Label</th>
           <th class="px-5 py-3 font-medium">Tipe</th>
           <th class="px-5 py-3 font-medium">Target</th>
+          <th class="px-5 py-3 font-medium">Induk</th>
           <th class="px-5 py-3 font-medium">Status</th>
           <th class="px-5 py-3 font-medium text-right">Aksi</th>
         </tr>
       </thead>
       <tbody>
-        {menuList.map((m) => (
-          <tr class="border-b border-neutral-gray last:border-0">
-            <td class="px-5 py-3 text-neutral-dark/70">{m.orderIndex}</td>
-            <td class="px-5 py-3 text-neutral-dark">{m.label}</td>
-            <td class="px-5 py-3 text-neutral-dark/70">{m.linkType}</td>
-            <td class="px-5 py-3 text-neutral-dark/70">{m.target}</td>
-            <td class="px-5 py-3">
-              <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${m.isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/70"}`}>
-                {m.isActive ? "Aktif" : "Nonaktif"}
-              </span>
-            </td>
-            <td class="px-5 py-3 text-right">
-              <button
-                class="btn-edit text-primary text-xs font-medium mr-3"
-                data-id={m.id}
-                data-label={m.label}
-                data-type={m.linkType}
-                data-target={m.target}
-                data-order={m.orderIndex}
-                data-active={String(m.isActive)}
-              >Edit</button>
-              <button class="btn-delete text-red-500 text-xs font-medium" data-id={m.id}>Hapus</button>
-            </td>
-          </tr>
-        ))}
+        {menuList.map((m) => {
+          const parentLabel = parentOptions.find((p) => p.id === m.parentId)?.label;
+          return (
+            <tr class="border-b border-neutral-gray last:border-0">
+              <td class="px-5 py-3 text-neutral-dark/70">{m.orderIndex}</td>
+              <td class="px-5 py-3 text-neutral-dark">{m.label}</td>
+              <td class="px-5 py-3 text-neutral-dark/70">{m.linkType}</td>
+              <td class="px-5 py-3 text-neutral-dark/70">{m.target}</td>
+              <td class="px-5 py-3 text-neutral-dark/70">{parentLabel ?? "-"}</td>
+              <td class="px-5 py-3">
+                <span class={`px-2.5 py-1 rounded-full text-xs font-medium ${m.isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-200 text-neutral-dark/70"}`}>
+                  {m.isActive ? "Aktif" : "Nonaktif"}
+                </span>
+              </td>
+              <td class="px-5 py-3 text-right">
+                <button
+                  class="btn-edit text-primary text-xs font-medium mr-3"
+                  data-id={m.id}
+                  data-label={m.label}
+                  data-type={m.linkType}
+                  data-target={m.target}
+                  data-order={m.orderIndex}
+                  data-active={String(m.isActive)}
+                  data-parent={m.parentId ?? ""}
+                >Edit</button>
+                <button class="btn-delete text-red-500 text-xs font-medium" data-id={m.id}>Hapus</button>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
     {menuList.length === 0 && (
@@ -81,6 +93,17 @@ const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } 
           <label class="block text-sm font-medium text-neutral-dark mb-1">Target</label>
           <input id="f-target" required placeholder="tentang-kami (tanpa slash di depan)" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+
+        <!-- BARU: dropdown pilih menu induk -->
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Menu Induk (opsional)</label>
+          <select id="f-parent" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm">
+            <option value="">-- Tidak ada (menu utama) --</option>
+            {parentOptions.map((p) => <option value={p.id}>{p.label}</option>)}
+          </select>
+          <p class="text-xs text-neutral-dark/50 mt-1">Pilih menu induk kalau ini mau jadi submenu (dropdown).</p>
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Urutan</label>
           <input id="f-order" type="number" value="0" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
@@ -113,6 +136,7 @@ const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } 
   const fTarget = document.getElementById("f-target") as HTMLInputElement;
   const fOrder = document.getElementById("f-order") as HTMLInputElement;
   const fActive = document.getElementById("f-active") as HTMLInputElement;
+  const fParent = document.getElementById("f-parent") as HTMLSelectElement; // BARU
 
   function openModal(isEdit = false) {
     errorBox.classList.add("hidden");
@@ -127,6 +151,7 @@ const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } 
     fTarget.value = "";
     fOrder.value = "0";
     fActive.checked = true;
+    fParent.value = ""; // BARU
     openModal(false);
   });
 
@@ -141,6 +166,7 @@ const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } 
       fTarget.value = el.dataset.target || "";
       fOrder.value = el.dataset.order || "0";
       fActive.checked = el.dataset.active === "true";
+      fParent.value = el.dataset.parent || ""; // BARU
       openModal(true);
     });
   });
@@ -164,6 +190,7 @@ const menuList = await prisma.navMenu.findMany({ orderBy: { orderIndex: "asc" } 
       target: fTarget.value,
       orderIndex: Number(fOrder.value),
       isActive: fActive.checked,
+      parentId: fParent.value || null, // BARU
     };
 
     const isEdit = !!fId.value;

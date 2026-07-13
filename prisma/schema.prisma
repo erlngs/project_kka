@@ -189,6 +189,7 @@ model Wilayah {
 
   kecamatan   Kecamatan[]
   pendaftaran Pendaftaran[]
+  pendaftaranBatch PendaftaranBatch[]
 
   @@map("wilayah")
 }
@@ -200,6 +201,7 @@ model Kecamatan {
   nama        String
   sekolah     Sekolah[]
   pendaftaran Pendaftaran[]
+  pendaftaranBatch PendaftaranBatch[]
 
   @@map("kecamatan")
 }
@@ -224,6 +226,7 @@ model Gelombang {
   isActive       Boolean             @default(true) @map("is_active")
   biaya          BiayaPendaftaran[]
   pendaftaran    Pendaftaran[]
+  pendaftaranBatch PendaftaranBatch[]
 
   @@map("gelombang")
 }
@@ -263,28 +266,50 @@ model Pendaftaran {
   syncedToSheet    Boolean           @default(false) @map("synced_to_sheet")
   invoice          Invoice?
   createdAt        DateTime          @default(now()) @map("created_at")
+  batchId       String?           @map("batch_id")
+  batch         PendaftaranBatch? @relation(fields: [batchId], references: [id])
 
   @@index([status])
   @@index([syncedToSheet])
   @@map("pendaftaran")
 }
 
+model PendaftaranBatch {
+  id              String        @id @default(uuid())
+  namaKoordinator String        @map("nama_koordinator")
+  namaSekolah     String        @map("nama_sekolah")
+  noWhatsapp      String        @map("no_whatsapp")
+  wilayahId       String?       @map("wilayah_id")
+  wilayah         Wilayah?      @relation(fields: [wilayahId], references: [id])
+  kecamatanId     String?       @map("kecamatan_id")
+  kecamatan       Kecamatan?    @relation(fields: [kecamatanId], references: [id])
+  gelombangId     String?       @map("gelombang_id")
+  gelombang       Gelombang?    @relation(fields: [gelombangId], references: [id])
+  pendaftaran     Pendaftaran[]
+  invoice         Invoice?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@map("pendaftaran_batch")
+}
+
 // ================== PEMBAYARAN ==================
 
 model Invoice {
-  id                 String        @id @default(uuid())
-  pendaftaranId      String        @unique @map("pendaftaran_id")
-  pendaftaran        Pendaftaran   @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
-  invoiceCode        String        @unique @map("invoice_code")
-  jumlahTagihan      Decimal       @map("jumlah_tagihan") @db.Decimal(12, 2)
-  metodePembayaran   String?       @map("metode_pembayaran")
-  buktiPembayaranUrl String?       @map("bukti_pembayaran_url")
-  catatanAdmin       String?       @map("catatan_admin")
-  status             StatusInvoice @default(menunggu_pembayaran)
-  dikonfirmasiOleh   String?       @map("dikonfirmasi_oleh")
-  admin              AdminUser?    @relation(fields: [dikonfirmasiOleh], references: [id])
-  dikonfirmasiAt     DateTime?     @map("dikonfirmasi_at")
-  createdAt          DateTime      @default(now()) @map("created_at")
+  id                 String            @id @default(uuid())
+  pendaftaranId      String?           @unique @map("pendaftaran_id")
+  pendaftaran        Pendaftaran?      @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+  batchId            String?           @unique @map("batch_id")
+  batch              PendaftaranBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  invoiceCode        String            @unique @map("invoice_code")
+  jumlahTagihan      Decimal           @map("jumlah_tagihan") @db.Decimal(12, 2)
+  metodePembayaran   String?           @map("metode_pembayaran")
+  buktiPembayaranUrl String?           @map("bukti_pembayaran_url")
+  catatanAdmin       String?           @map("catatan_admin")
+  status             StatusInvoice     @default(menunggu_pembayaran)
+  dikonfirmasiOleh   String?           @map("dikonfirmasi_oleh")
+  admin              AdminUser?        @relation(fields: [dikonfirmasiOleh], references: [id])
+  dikonfirmasiAt     DateTime?         @map("dikonfirmasi_at")
+  createdAt          DateTime          @default(now()) @map("created_at")
 
   @@map("invoices")
 }

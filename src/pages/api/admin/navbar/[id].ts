@@ -14,6 +14,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
       target: body.target,
       orderIndex: body.orderIndex ?? 0,
       isActive: body.isActive ?? true,
+      parentId: body.parentId || null, // BARU
     },
   });
 

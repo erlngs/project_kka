@@ -8,10 +8,9 @@ const { code } = Astro.params;
 
 const invoice = await prisma.invoice.findUnique({
   where: { invoiceCode: code },
-  include: { 
-    pendaftaran: { 
-      include: { wilayah: true, gelombang: true } 
-    } 
+  include: {
+    pendaftaran: { include: { wilayah: true, gelombang: true } },
+    batch: { include: { wilayah: true, gelombang: true, pendaftaran: true } },
   },
 });
 
@@ -72,18 +71,45 @@ function formatRupiah(n: number) {
   </div>
       
       <div class="flex flex-col gap-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-neutral-dark/70">Nama Siswa</span>
-          <span class="text-neutral-dark font-medium">{invoice.pendaftaran.namaSiswa}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-neutral-dark/70">Wilayah</span>
-          <span class="text-neutral-dark">{invoice.pendaftaran.wilayah?.nama ?? "-"}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-neutral-dark/70">Gelombang</span>
-          <span class="text-neutral-dark">{invoice.pendaftaran.gelombang?.nama ?? "-"}</span>
-        </div>
+  {invoice.batch ? (
+    <>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Koordinator</span>
+        <span class="text-neutral-dark font-medium">{invoice.batch.namaKoordinator}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Sekolah</span>
+        <span class="text-neutral-dark">{invoice.batch.namaSekolah}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Wilayah</span>
+        <span class="text-neutral-dark">{invoice.batch.wilayah?.nama ?? "-"}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Gelombang</span>
+        <span class="text-neutral-dark">{invoice.batch.gelombang?.nama ?? "-"}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Jumlah Siswa</span>
+        <span class="text-neutral-dark font-medium">{invoice.batch.pendaftaran.length} siswa</span>
+      </div>
+    </>
+  ) : (
+    <>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Nama Siswa</span>
+        <span class="text-neutral-dark font-medium">{invoice.pendaftaran?.namaSiswa}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Wilayah</span>
+        <span class="text-neutral-dark">{invoice.pendaftaran?.wilayah?.nama ?? "-"}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-neutral-dark/70">Gelombang</span>
+        <span class="text-neutral-dark">{invoice.pendaftaran?.gelombang?.nama ?? "-"}</span>
+      </div>
+    </>
+  )}
         
         <div class="flex justify-between border-t border-neutral-gray pt-2 mt-1">
           <span class="text-neutral-dark font-medium">Total Tagihan</span>
