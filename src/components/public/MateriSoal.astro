@@ -1,0 +1,81 @@
+---
+const materi = [
+  {
+    jenjang: "SD/MI",
+    kelas: "Kelas IV, V, VI",
+    desc: "Simulasi nyata menghadapi seleksi masuk SMP/MTs unggulan melalui jalur prestasi.",
+    mapel: ["Matematika", "Bahasa Indonesia"],
+    accent: "from-sky-500 to-sky-600",
+    ring: "ring-sky-100",
+    icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s4.332.477 5.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
+  },
+  {
+    jenjang: "SMP/MTs",
+    kelas: "Kelas VIII, IX",
+    desc: "Mengukur kesiapan akademik sebelum menghadapi seleksi masuk SMA/MA/SMK favorit.",
+    mapel: ["Matematika", "Bahasa Indonesia"],
+    accent: "from-emerald-500 to-emerald-600",
+    ring: "ring-emerald-100",
+    icon: "M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z",
+  },
+  {
+    jenjang: "SMA/MA/SMK",
+    kelas: "Kelas XI, XII",
+    desc: "Persiapan menghadapi seleksi masuk Perguruan Tinggi Negeri (PTN) melalui jalur prestasi akademik.",
+    mapel: ["Matematika", "Bahasa Indonesia", "Bahasa Inggris", "2 Mapel Pilihan Jurusan"],
+    accent: "from-amber-500 to-amber-600",
+    ring: "ring-amber-100",
+    icon: "M12 3L1 9l11 6 9-4.909V17h2V9L12 3zm0 13.5L3.5 12v4.5c0 2.485 3.806 4.5 8.5 4.5s8.5-2.015 8.5-4.5V12L12 16.5z",
+  },
+];
+---
+
+<section class="max-w-6xl mx-auto px-6 py-20">
+  <div class="text-center mb-14">
+    <span class="inline-block text-primary text-xs font-bold uppercase tracking-[0.2em] mb-3">Materi Soal</span>
+    <h2 class="font-heading text-3xl md:text-4xl font-bold text-neutral-dark mb-3">Materi Soal KKA 2026</h2>
+    <p class="text-neutral-dark/60 max-w-xl mx-auto">
+      Disusun sesuai standar Tes Kemampuan Akademik (TKA) resmi dari Kemendikdasmen — simulasi paling relevan untuk persiapan seleksi.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {materi.map((m) => (
+      <div class={`group relative bg-neutral-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 p-7 flex flex-col overflow-hidden ring-1 ${m.ring}`}>
+
+        <!-- aksen strip atas, gradasi per jenjang -->
+        <div class={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${m.accent}`}></div>
+
+        <div class={`w-14 h-14 rounded-2xl bg-gradient-to-br ${m.accent} text-neutral-white flex items-center justify-center mb-5 shadow-md group-hover:scale-105 transition-transform`}>
+          <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d={m.icon} />
+          </svg>
+        </div>
+
+        <h3 class="font-heading text-xl font-bold text-neutral-dark">Jenjang {m.jenjang}</h3>
+        <p class="text-xs text-neutral-dark/45 font-medium mb-4">{m.kelas}</p>
+        <p class="text-sm text-neutral-dark/65 leading-relaxed mb-5">{m.desc}</p>
+
+        <div class="mt-auto flex flex-col gap-2 mb-6 pt-5 border-t border-neutral-gray">
+          {m.mapel.map((mp) => (
+            <div class="flex items-center gap-2.5 text-sm text-neutral-dark/80">
+              <span class={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${m.accent} shrink-0`}></span>
+              {mp}
+            </div>
+          ))}
+        </div>
+
+        <a
+          href="/daftar"
+          data-astro-prefetch
+          class="text-center border-2 border-neutral-gray text-neutral-dark font-semibold text-sm py-2.5 rounded-xl group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:text-neutral-white transition-all"
+          style={`--tw-gradient-from: var(--tw-gradient-stops)`}
+        >
+          <span class={`inline-block w-full group-hover:bg-gradient-to-r ${m.accent} group-hover:bg-clip-text`}>
+            Daftar Sekarang
+          </span>
+        </a>
+      </div>
+    ))}
+  </div>
+</section>
