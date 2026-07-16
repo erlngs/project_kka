@@ -20,6 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
       nama: body.nama,
       region: body.region || null,
       deskripsi: body.deskripsi || null,
+      logoUrl: body.logoUrl || null,   // ← ini yang kurang
       orderIndex: body.orderIndex ?? 0,
       isActive: body.isActive ?? true,
     },

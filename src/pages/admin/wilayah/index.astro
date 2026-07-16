@@ -149,6 +149,16 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
     openModal(false);
   });
 
+  document.querySelectorAll(".btn-delete").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    if (!confirm("Yakin hapus wilayah ini?")) return;
+    const id = (btn as HTMLButtonElement).dataset.id;
+    const res = await fetch(`/api/admin/wilayah/${id}`, { method: "DELETE" });
+    if (res.ok) location.reload();
+    else alert("Gagal menghapus data");
+  });
+});
+
   document.getElementById("btn-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
 
   // Edit
@@ -175,27 +185,34 @@ const wilayahList = await prisma.wilayah.findMany({ orderBy: { orderIndex: "asc"
 
   // Upload Logo
   document.getElementById("f-logo-file")?.addEventListener("change", async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
 
-    const fd = new FormData();
-    fd.append("file", file);
+  const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Mengunggah gambar...";
 
-    try {
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
+  const fd = new FormData();
+  fd.append("file", file);
 
-      if (data.url) {
-        fLogoUrl.value = data.url;
-        previewLogo.src = data.url;
-        previewLogo.classList.remove("hidden");
-      } else {
-        alert("Gagal upload logo");
-      }
-    } catch {
-      alert("Terjadi kesalahan saat upload");
+  try {
+    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+    const data = await res.json();
+
+    if (data.url) {
+      fLogoUrl.value = data.url;
+      previewLogo.src = data.url;
+      previewLogo.classList.remove("hidden");
+    } else {
+      alert("Gagal upload logo");
     }
-  });
+  } catch {
+    alert("Terjadi kesalahan saat upload");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Simpan";
+  }
+});
 
   // Submit
   form.addEventListener("submit", async (e) => {
