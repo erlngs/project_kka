@@ -138,6 +138,14 @@ model Setting {
   email         String?
   copyright     String?
 
+  alamat        String?
+  jamOperasional String? @map("jam_operasional")
+
+  instagramUrl  String? @map("instagram_url")
+  facebookUrl   String? @map("facebook_url")
+  tiktokUrl     String? @map("tiktok_url")
+  youtubeUrl    String? @map("youtube_url")
+
   bankNama      String?  @map("bank_nama")
   bankNorek     String?  @map("bank_norek")
   bankAtasNama  String?  @map("bank_atas_nama")

@@ -67,14 +67,13 @@ const materi = [
 
         <a
           href="/daftar"
-          data-astro-prefetch
-          class="text-center border-2 border-neutral-gray text-neutral-dark font-semibold text-sm py-2.5 rounded-xl group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:text-neutral-white transition-all"
-          style={`--tw-gradient-from: var(--tw-gradient-stops)`}
-        >
-          <span class={`inline-block w-full group-hover:bg-gradient-to-r ${m.accent} group-hover:bg-clip-text`}>
-            Daftar Sekarang
-          </span>
-        </a>
+  data-astro-prefetch
+  class={`text-center border-2 border-neutral-gray text-neutral-dark font-semibold text-sm py-2.5 rounded-xl transition-all group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:text-neutral-white ${m.accent}`}
+>
+  <span class="inline-block w-full">
+    Daftar Sekarang
+  </span>
+</a>
       </div>
     ))}
   </div>

@@ -45,21 +45,23 @@ const alur = [
 ];
 ---
 
-<section class="max-w-5xl mx-auto px-6 py-16">
-  <div class="text-center mb-10">
-    <h2 class="font-heading text-2xl md:text-3xl font-bold text-neutral-dark mb-2">Detail KKA 2026</h2>
-    <p class="text-neutral-dark/70">Penjelasan singkat informasi Kompetisi Kompetensi Akademik (KKA) 2026.</p>
-  </div>
+<section class="bg-neutral-gray py-16">
+  <div class="max-w-5xl mx-auto px-6">
 
-  <div class="flex flex-wrap justify-center gap-1 mb-0 relative z-10" id="tab-buttons">
+    <div class="text-center mb-10">
+      <h2 class="font-heading text-2xl md:text-3xl font-bold text-neutral-dark mb-2">Detail KKA 2026</h2>
+      <p class="text-neutral-dark/70">Penjelasan singkat informasi Kompetisi Kompetensi Akademik (KKA) 2026.</p>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-1 mb-0 relative z-10" id="tab-buttons">
   {tabs.map((t, i) => (
     <button
       type="button"
       data-tab={t.id}
       class={`tab-btn px-5 py-3 text-sm font-semibold rounded-t-xl transition-all border-b-2 ${
         i === 0
-          ? "bg-neutral-white text-primary border-primary -mb-px"
-          : "bg-transparent text-neutral-dark/40 border-transparent hover:text-neutral-dark/70"
+          ? "bg-primary text-neutral-white border-primary -mb-px"
+          : "bg-neutral-white/60 text-neutral-dark/60 border-transparent hover:bg-neutral-white hover:text-primary"
       }`}
     >
       {t.label}
@@ -67,115 +69,117 @@ const alur = [
   ))}
 </div>
 
-  <div class="bg-neutral-white rounded-2xl rounded-tl-none shadow-sm p-6 md:p-8 border border-neutral-gray relative z-0">
+    <div class="bg-neutral-white rounded-2xl rounded-tl-none shadow-sm p-6 md:p-8 border border-neutral-gray relative z-0">
 
-    <!-- Mengapa Penting -->
-    <div class="tab-panel" data-panel="mengapa">
-      <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Mengapa Harus Ikut KKA 2026?</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {alasan.map((a, i) => (
-          <div class="flex items-start gap-3">
-            <span class="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-            <p class="text-sm text-neutral-dark/80">{a}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <!-- Peserta & Materi -->
-    <div class="tab-panel hidden" data-panel="peserta">
-      <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Untuk Siapa KKA 2026?</h3>
-      <p class="text-sm text-neutral-dark/70 mb-5">KKA 2026 terbuka untuk seluruh pelajar se-Karesidenan Kediri dari jenjang SD hingga SMA.</p>
-      <div class="flex flex-col gap-3">
-        <div class="border border-neutral-gray rounded-lg p-4">
-          <p class="font-medium text-neutral-dark text-sm">SD/MI — Kelas IV, V, dan VI</p>
-          <p class="text-xs text-neutral-dark/60 mt-1">Materi: Matematika & Bahasa Indonesia</p>
-        </div>
-        <div class="border border-neutral-gray rounded-lg p-4">
-          <p class="font-medium text-neutral-dark text-sm">SMP/MTs — Kelas VIII dan IX</p>
-          <p class="text-xs text-neutral-dark/60 mt-1">Materi: Matematika & Bahasa Indonesia</p>
-        </div>
-        <div class="border border-neutral-gray rounded-lg p-4">
-          <p class="font-medium text-neutral-dark text-sm">SMA/MA/SMK — Kelas XI dan XII</p>
-          <p class="text-xs text-neutral-dark/60 mt-1">Materi: Matematika, B. Indonesia, B. Inggris + 2 Mapel Pilihan Jurusan</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Alur -->
-    <div class="tab-panel hidden" data-panel="alur">
-      <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Cara Daftar & Alur Kompetisi</h3>
-      <div class="flex flex-col gap-4">
-        {alur.map((a, i) => (
-          <div class="flex gap-4">
-            <div class="w-8 h-8 rounded-full bg-primary text-neutral-white text-sm font-bold flex items-center justify-center shrink-0">{i + 1}</div>
-            <div>
-              <p class="font-medium text-neutral-dark text-sm">{a.title}</p>
-              <p class="text-sm text-neutral-dark/70 mt-0.5">{a.desc}</p>
+      <!-- Mengapa Penting -->
+      <div class="tab-panel" data-panel="mengapa">
+        <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Mengapa Harus Ikut KKA 2026?</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {alasan.map((a, i) => (
+            <div class="flex items-start gap-3">
+              <span class="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+              <p class="text-sm text-neutral-dark/80">{a}</p>
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <!-- Biaya (dinamis dari database) -->
-    <div class="tab-panel hidden" data-panel="biaya">
-      <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Biaya Pendaftaran KKA 2026</h3>
-      {gelombangList.length === 0 ? (
-        <p class="text-sm text-neutral-dark/60">Belum ada gelombang pendaftaran yang aktif saat ini.</p>
-      ) : (
-        <div class="flex flex-col gap-3">
-          {gelombangList.map((g) => {
-            const isBerjalan = today >= new Date(g.tanggalMulai) && today <= new Date(g.tanggalSelesai);
-            return (
-              <div class={`border rounded-lg p-4 ${isBerjalan ? "border-primary bg-primary/5" : "border-neutral-gray"}`}>
-                <div class="flex items-center gap-2 mb-2">
-                  <p class="font-medium text-neutral-dark text-sm">{g.nama}</p>
-                  {isBerjalan && (
-                    <span class="text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Sedang Berlangsung</span>
-                  )}
-                </div>
-                <p class="text-xs text-neutral-dark/50 mb-3">
-                  {formatTanggal(g.tanggalMulai)} – {formatTanggal(g.tanggalSelesai)}
-                </p>
-                <div class="grid grid-cols-3 gap-2 text-sm">
-                  <div>
-                    <p class="text-neutral-dark/50 text-xs">SD/MI</p>
-                    <p class="font-semibold text-secondary-text">{getHarga(g.biaya, "SD_MI") ? formatRupiah(Number(getHarga(g.biaya, "SD_MI"))) : "-"}</p>
-                  </div>
-                  <div>
-                    <p class="text-neutral-dark/50 text-xs">SMP/MTs</p>
-                    <p class="font-semibold text-secondary-text">{getHarga(g.biaya, "SMP_MTS") ? formatRupiah(Number(getHarga(g.biaya, "SMP_MTS"))) : "-"}</p>
-                  </div>
-                  <div>
-                    <p class="text-neutral-dark/50 text-xs">SMA/MA/SMK</p>
-                    <p class="font-semibold text-secondary-text">{getHarga(g.biaya, "SMA_MA_SMK") ? formatRupiah(Number(getHarga(g.biaya, "SMA_MA_SMK"))) : "-"}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          ))}
         </div>
-      )}
+      </div>
+
+      <!-- Peserta & Materi -->
+      <div class="tab-panel hidden" data-panel="peserta">
+        <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Untuk Siapa KKA 2026?</h3>
+        <p class="text-sm text-neutral-dark/70 mb-5">KKA 2026 terbuka untuk seluruh pelajar se-Karesidenan Kediri dari jenjang SD hingga SMA.</p>
+        <div class="flex flex-col gap-3">
+          <div class="border border-neutral-gray rounded-lg p-4">
+            <p class="font-medium text-neutral-dark text-sm">SD/MI — Kelas IV, V, dan VI</p>
+            <p class="text-xs text-neutral-dark/60 mt-1">Materi: Matematika & Bahasa Indonesia</p>
+          </div>
+          <div class="border border-neutral-gray rounded-lg p-4">
+            <p class="font-medium text-neutral-dark text-sm">SMP/MTs — Kelas VIII dan IX</p>
+            <p class="text-xs text-neutral-dark/60 mt-1">Materi: Matematika & Bahasa Indonesia</p>
+          </div>
+          <div class="border border-neutral-gray rounded-lg p-4">
+            <p class="font-medium text-neutral-dark text-sm">SMA/MA/SMK — Kelas XI dan XII</p>
+            <p class="text-xs text-neutral-dark/60 mt-1">Materi: Matematika, B. Indonesia, B. Inggris + 2 Mapel Pilihan Jurusan</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alur -->
+      <div class="tab-panel hidden" data-panel="alur">
+        <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Cara Daftar & Alur Kompetisi</h3>
+        <div class="flex flex-col gap-4">
+          {alur.map((a, i) => (
+            <div class="flex gap-4">
+              <div class="w-8 h-8 rounded-full bg-primary text-neutral-white text-sm font-bold flex items-center justify-center shrink-0">{i + 1}</div>
+              <div>
+                <p class="font-medium text-neutral-dark text-sm">{a.title}</p>
+                <p class="text-sm text-neutral-dark/70 mt-0.5">{a.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Biaya (dinamis dari database) -->
+      <div class="tab-panel hidden" data-panel="biaya">
+        <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Biaya Pendaftaran KKA 2026</h3>
+        {gelombangList.length === 0 ? (
+          <p class="text-sm text-neutral-dark/60">Belum ada gelombang pendaftaran yang aktif saat ini.</p>
+        ) : (
+          <div class="flex flex-col gap-3">
+            {gelombangList.map((g) => {
+              const isBerjalan = today >= new Date(g.tanggalMulai) && today <= new Date(g.tanggalSelesai);
+              return (
+                <div class={`border rounded-lg p-4 ${isBerjalan ? "border-primary bg-primary/5" : "border-neutral-gray"}`}>
+                  <div class="flex items-center gap-2 mb-2">
+                    <p class="font-medium text-neutral-dark text-sm">{g.nama}</p>
+                    {isBerjalan && (
+                      <span class="text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Sedang Berlangsung</span>
+                    )}
+                  </div>
+                  <p class="text-xs text-neutral-dark/50 mb-3">
+                    {formatTanggal(g.tanggalMulai)} – {formatTanggal(g.tanggalSelesai)}
+                  </p>
+                  <div class="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <p class="text-neutral-dark/50 text-xs">SD/MI</p>
+                      <p class="font-semibold text-secondary-text">{getHarga(g.biaya, "SD_MI") ? formatRupiah(Number(getHarga(g.biaya, "SD_MI"))) : "-"}</p>
+                    </div>
+                    <div>
+                      <p class="text-neutral-dark/50 text-xs">SMP/MTs</p>
+                      <p class="font-semibold text-secondary-text">{getHarga(g.biaya, "SMP_MTS") ? formatRupiah(Number(getHarga(g.biaya, "SMP_MTS"))) : "-"}</p>
+                    </div>
+                    <div>
+                      <p class="text-neutral-dark/50 text-xs">SMA/MA/SMK</p>
+                      <p class="font-semibold text-secondary-text">{getHarga(g.biaya, "SMA_MA_SMK") ? formatRupiah(Number(getHarga(g.biaya, "SMA_MA_SMK"))) : "-"}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <!-- Hadiah -->
+      <div class="tab-panel hidden" data-panel="hadiah">
+        <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Raih Prestasi, Dapatkan Reward!</h3>
+        <p class="text-sm text-neutral-dark/70 leading-relaxed mb-4">
+          Para pemenang KKA 2026 akan mendapatkan penghargaan bergengsi berupa medali, uang tunai, dan sertifikat resmi.
+        </p>
+        <p class="text-sm text-neutral-dark/70 leading-relaxed">
+          Lebih dari sekadar hadiah — kemenangan di KKA adalah bukti nyata kemampuan akademikmu yang siap bersaing di level selanjutnya.
+        </p>
+      </div>
+
     </div>
 
-    <!-- Hadiah -->
-    <div class="tab-panel hidden" data-panel="hadiah">
-      <h3 class="font-heading font-bold text-lg text-neutral-dark mb-4">Raih Prestasi, Dapatkan Reward!</h3>
-      <p class="text-sm text-neutral-dark/70 leading-relaxed mb-4">
-        Para pemenang KKA 2026 akan mendapatkan penghargaan bergengsi berupa medali, uang tunai, dan sertifikat resmi.
-      </p>
-      <p class="text-sm text-neutral-dark/70 leading-relaxed">
-        Lebih dari sekadar hadiah — kemenangan di KKA adalah bukti nyata kemampuan akademikmu yang siap bersaing di level selanjutnya.
-      </p>
+    <div class="text-center mt-8">
+      <a href="/daftar" data-astro-prefetch class="inline-block bg-primary text-neutral-white font-heading font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity">
+        Daftar Sekarang
+      </a>
     </div>
 
-  </div>
-
-  <div class="text-center mt-8">
-    <a href="/daftar" data-astro-prefetch class="inline-block bg-primary text-neutral-white font-heading font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity">
-      Daftar Sekarang
-    </a>
   </div>
 </section>
 
@@ -188,11 +192,11 @@ const alur = [
     const target = (btn as HTMLElement).dataset.tab;
 
     buttons.forEach((b) => {
-      b.classList.remove("bg-neutral-white", "text-primary", "border-primary", "-mb-px");
-      b.classList.add("bg-transparent", "text-neutral-dark/40", "border-transparent");
+      b.classList.remove("bg-primary", "text-neutral-white", "border-primary", "-mb-px");
+      b.classList.add("bg-neutral-white/60", "text-neutral-dark/60", "border-transparent");
     });
-    btn.classList.add("bg-neutral-white", "text-primary", "border-primary", "-mb-px");
-    btn.classList.remove("bg-transparent", "text-neutral-dark/40", "border-transparent");
+    btn.classList.add("bg-primary", "text-neutral-white", "border-primary", "-mb-px");
+    btn.classList.remove("bg-neutral-white/60", "text-neutral-dark/60", "border-transparent");
 
     panels.forEach((p) => {
       if ((p as HTMLElement).dataset.panel === target) {

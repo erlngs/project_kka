@@ -41,6 +41,39 @@ const footer = await prisma.setting.findUnique({
         </div>
 
         <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Alamat</label>
+          <textarea id="f-alamat" rows="2" class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">{footer?.alamat || ""}</textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Jam Operasional</label>
+          <textarea id="f-jam" rows="3" placeholder={"Senin-Jumat: 08.00-16.00\nSabtu: 08.00-12.00\nMinggu: Tutup"} class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">{footer?.jamOperasional || ""}</textarea>
+          <p class="text-xs text-neutral-dark/50 mt-1">Tiap baris baru akan ditampilkan di baris terpisah.</p>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-medium text-neutral-dark mb-3">Media Sosial (opsional)</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-neutral-dark/60 mb-1">Instagram URL</label>
+              <input id="f-instagram" value={footer?.instagramUrl || ""} placeholder="https://instagram.com/..." class="w-full px-4 py-2.5 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-dark/60 mb-1">Facebook URL</label>
+              <input id="f-facebook" value={footer?.facebookUrl || ""} placeholder="https://facebook.com/..." class="w-full px-4 py-2.5 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-dark/60 mb-1">TikTok URL</label>
+              <input id="f-tiktok" value={footer?.tiktokUrl || ""} placeholder="https://tiktok.com/@..." class="w-full px-4 py-2.5 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-dark/60 mb-1">YouTube URL</label>
+              <input id="f-youtube" value={footer?.youtubeUrl || ""} placeholder="https://youtube.com/@..." class="w-full px-4 py-2.5 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+          </div>
+        </div>
+
+        <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Copyright Text</label>
           <input id="f-copyright" value={footer?.copyright || ""} class="w-full px-4 py-3 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
@@ -97,6 +130,12 @@ form?.addEventListener("submit", async (e) => {
         footerLogo: (document.getElementById("f-logo-url") as HTMLInputElement)?.value ?? "",
         whatsapp: (document.getElementById("f-whatsapp") as HTMLInputElement)?.value ?? "",
         email: (document.getElementById("f-email") as HTMLInputElement)?.value ?? "",
+        alamat: (document.getElementById("f-alamat") as HTMLTextAreaElement)?.value ?? "",
+        jamOperasional: (document.getElementById("f-jam") as HTMLTextAreaElement)?.value ?? "",
+        instagramUrl: (document.getElementById("f-instagram") as HTMLInputElement)?.value ?? "",
+        facebookUrl: (document.getElementById("f-facebook") as HTMLInputElement)?.value ?? "",
+        tiktokUrl: (document.getElementById("f-tiktok") as HTMLInputElement)?.value ?? "",
+        youtubeUrl: (document.getElementById("f-youtube") as HTMLInputElement)?.value ?? "",
         copyright: (document.getElementById("f-copyright") as HTMLInputElement)?.value ?? ""
     };
 
