@@ -12,7 +12,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
       nama: body.nama,
       region: body.region || null,
       deskripsi: body.deskripsi || null,
-      logoUrl: body.logoUrl || null,        // ← Tambahkan
+      logoUrl: body.logoUrl || null,
       orderIndex: body.orderIndex ?? 0,
       isActive: body.isActive ?? true,
     },

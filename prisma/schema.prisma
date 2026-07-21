@@ -170,16 +170,19 @@ model Testimoni {
 }
 
 model Article {
-  id          String    @id @default(uuid())
-  slug        String    @unique
-  title       String
-  category    String?
-  author      String?
-  thumbnail   String?
-  content     String
-  publishedAt DateTime? @map("published_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  slug            String    @unique
+  title           String
+  excerpt         String?
+  category        String?
+  author          String?
+  thumbnail       String?
+  content         String
+  tags            String?
+  metaDescription String?   @map("meta_description")
+  publishedAt     DateTime? @map("published_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("articles")
 }

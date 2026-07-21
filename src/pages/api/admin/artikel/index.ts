@@ -19,10 +19,13 @@ export const POST: APIRoute = async ({ request }) => {
     data: {
       title: body.title,
       slug: body.slug,
+      excerpt: body.excerpt || null,
       category: body.category || null,
       author: body.author || null,
       thumbnail: body.thumbnail || null,
       content: body.content,
+      tags: body.tags || null,
+      metaDescription: body.metaDescription || null,
       publishedAt: body.isPublished ? new Date() : null,
     },
   });

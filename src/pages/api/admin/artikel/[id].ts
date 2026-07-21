@@ -5,7 +5,6 @@ export const prerender = false;
 
 export const PUT: APIRoute = async ({ params, request }) => {
   const body = await request.json();
-
   const existing = await prisma.article.findUnique({ where: { id: params.id } });
 
   const updated = await prisma.article.update({
@@ -13,10 +12,13 @@ export const PUT: APIRoute = async ({ params, request }) => {
     data: {
       title: body.title,
       slug: body.slug,
+      excerpt: body.excerpt || null,
       category: body.category || null,
       author: body.author || null,
       thumbnail: body.thumbnail || null,
       content: body.content,
+      tags: body.tags || null,
+      metaDescription: body.metaDescription || null,
       publishedAt: body.isPublished ? (existing?.publishedAt ?? new Date()) : null,
     },
   });

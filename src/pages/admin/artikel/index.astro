@@ -43,10 +43,13 @@ const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc"
                 data-id={a.id}
                 data-title={a.title}
                 data-slug={a.slug}
+                data-excerpt={a.excerpt ?? ""}
                 data-category={a.category ?? ""}
                 data-author={a.author ?? ""}
                 data-thumbnail={a.thumbnail ?? ""}
                 data-content={a.content}
+                data-tags={a.tags ?? ""}
+                data-meta={a.metaDescription ?? ""}
                 data-published={String(!!a.publishedAt)}
               >Edit</button>
               <button class="btn-delete text-red-500 text-xs font-medium" data-id={a.id}>Hapus</button>
@@ -73,15 +76,27 @@ const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc"
           <label class="block text-sm font-medium text-neutral-dark mb-1">Slug (URL)</label>
           <input id="f-slug" required placeholder="tips-belajar-hots" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Ringkasan Singkat (Excerpt)</label>
+          <textarea id="f-excerpt" rows="2" placeholder="Ringkasan 1-2 kalimat, tampil di kartu artikel & hasil pencarian Google" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"></textarea>
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">Kategori</label>
-            <input id="f-category" placeholder="Tips, Berita, dll" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+            <input id="f-category" placeholder="Info KKA, Tips & Trik, dll" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
           </div>
           <div>
             <label class="block text-sm font-medium text-neutral-dark mb-1">Penulis</label>
             <input id="f-author" placeholder="Admin KKA" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
           </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Tags (pisahkan dengan koma)</label>
+          <input id="f-tags" placeholder="KKA Radar Kediri, TKA, pendaftaran" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-dark mb-1">Meta Description (SEO)</label>
+          <textarea id="f-meta" rows="2" placeholder="Deskripsi untuk mesin pencari, maks ~155 karakter" class="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"></textarea>
         </div>
         <div>
           <label class="block text-sm font-medium text-neutral-dark mb-1">Thumbnail</label>
@@ -119,8 +134,11 @@ const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc"
   const fId = document.getElementById("f-id") as HTMLInputElement;
   const fTitle = document.getElementById("f-title") as HTMLInputElement;
   const fSlug = document.getElementById("f-slug") as HTMLInputElement;
+  const fExcerpt = document.getElementById("f-excerpt") as HTMLTextAreaElement;
   const fCategory = document.getElementById("f-category") as HTMLInputElement;
   const fAuthor = document.getElementById("f-author") as HTMLInputElement;
+  const fTags = document.getElementById("f-tags") as HTMLInputElement;
+  const fMeta = document.getElementById("f-meta") as HTMLTextAreaElement;
   const fThumbUrl = document.getElementById("f-thumb-url") as HTMLInputElement;
   const fContent = document.getElementById("f-content") as HTMLTextAreaElement;
   const fPublished = document.getElementById("f-published") as HTMLInputElement;
@@ -159,8 +177,11 @@ const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc"
     fId.value = "";
     fTitle.value = "";
     fSlug.value = "";
+    fExcerpt.value = "";
     fCategory.value = "";
     fAuthor.value = "";
+    fTags.value = "";
+    fMeta.value = "";
     fThumbUrl.value = "";
     fContent.value = "";
     fPublished.checked = false;
@@ -176,8 +197,11 @@ const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc"
       fId.value = el.dataset.id || "";
       fTitle.value = el.dataset.title || "";
       fSlug.value = el.dataset.slug || "";
+      fExcerpt.value = el.dataset.excerpt || "";
       fCategory.value = el.dataset.category || "";
       fAuthor.value = el.dataset.author || "";
+      fTags.value = el.dataset.tags || "";
+      fMeta.value = el.dataset.meta || "";
       fThumbUrl.value = el.dataset.thumbnail || "";
       fContent.value = el.dataset.content || "";
       fPublished.checked = el.dataset.published === "true";
@@ -207,8 +231,11 @@ const articleList = await prisma.article.findMany({ orderBy: { createdAt: "desc"
     const payload = {
       title: fTitle.value,
       slug: fSlug.value,
+      excerpt: fExcerpt.value,
       category: fCategory.value,
       author: fAuthor.value,
+      tags: fTags.value,
+      metaDescription: fMeta.value,
       thumbnail: fThumbUrl.value,
       content: fContent.value,
       isPublished: fPublished.checked,

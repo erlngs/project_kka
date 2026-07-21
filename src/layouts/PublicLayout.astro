@@ -14,12 +14,13 @@ const { title, description } = Astro.props;
 <!doctype html>
 <html lang="id">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} | KKA Radar Kediri</title>
-    <meta name="description" content={description ?? "Kompetisi Kompetensi Akademik (KKA) 2026 oleh Jawa Pos Radar Kediri untuk siswa SD/MI, SMP/MTs, SMA/MA/SMK se-Karesidenan Kediri."} />
-    <link rel="canonical" href={Astro.url.href} />
-  </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} | KKA Radar Kediri</title>
+  <meta name="description" content={description ?? "Kompetisi Kompetensi Akademik (KKA) 2026 oleh Jawa Pos Radar Kediri untuk siswa SD/MI, SMP/MTs, SMA/MA/SMK se-Karesidenan Kediri."} />
+  <link rel="canonical" href={Astro.url.href} />
+  <slot name="head" />
+</head>
   <body class="font-body text-neutral-dark pb-16 md:pb-0">
     <PendingInvoiceBanner />
     <Navbar />

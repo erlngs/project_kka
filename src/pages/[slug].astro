@@ -85,17 +85,35 @@ const cardIcons: Record<string, string> = {
           );
 
         case "gallery":
-          return (
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-              {(c.images || []).map((img: any) => (
-                <img
-                  src={img.url}
-                  alt={img.alt || ""}
-                  class="rounded-lg w-full h-52 object-cover"
-                />
-              ))}
-            </div>
-          );
+  return (
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+      {(c.images || []).map((img: any, i: number) => (
+        <div class="relative group overflow-hidden rounded-lg cursor-pointer">
+          <img
+            src={img.url}
+            alt={img.alt || ""}
+            class="lightbox-img w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+            data-index={i}
+            data-full={img.url}
+          />
+          <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center pointer-events-none">
+            <svg
+              width="32"
+              height="32"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+              class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-75 group-hover:scale-100"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
         case "testimonial":
           return (
@@ -124,7 +142,7 @@ const cardIcons: Record<string, string> = {
                 <h2 class="font-heading text-3xl font-bold mb-3">{c.title}</h2>
               )}
               <div class="w-16 h-1 bg-primary mx-auto mb-10"></div>
-              <div class={`grid gap-6 text-left ${(c.items?.length || 0) > 2 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+              <div class="grid gap-6 text-left md:grid-cols-2">
                 {(c.items || []).map((item: any) => (
                   <div class="group bg-white rounded-2xl shadow-md border border-neutral-100 p-8 transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/20">
                     {item.icon && cardIcons[item.icon] && (
@@ -145,8 +163,84 @@ const cardIcons: Record<string, string> = {
       }
     })}
   </div>
-</PublicLayout>
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="hidden fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4">
+    <button id="lightbox-close" aria-label="Tutup" class="absolute top-5 right-5 text-white/80 hover:text-white">
+      <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
 
+    <button id="lightbox-prev" aria-label="Sebelumnya" class="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white">
+      <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <img id="lightbox-image" src="" alt="" class="max-h-[85vh] max-w-[90vw] rounded-lg object-contain" />
+
+    <button id="lightbox-next" aria-label="Berikutnya" class="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white">
+      <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+</PublicLayout>
+<script>
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImage = document.getElementById("lightbox-image") as HTMLImageElement;
+  const btnClose = document.getElementById("lightbox-close");
+  const btnPrev = document.getElementById("lightbox-prev");
+  const btnNext = document.getElementById("lightbox-next");
+
+  let currentGallery: string[] = [];
+  let currentIndex = 0;
+
+  function openLightbox(images: string[], index: number) {
+    currentGallery = images;
+    currentIndex = index;
+    lightboxImage.src = currentGallery[currentIndex];
+    lightbox?.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    lightbox?.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  function showImage(offset: number) {
+    currentIndex = (currentIndex + offset + currentGallery.length) % currentGallery.length;
+    lightboxImage.src = currentGallery[currentIndex];
+  }
+
+  // Kelompokkan gambar per galeri (satu blok gallery = satu grup navigasi)
+  document.querySelectorAll(".grid").forEach((grid) => {
+    const imgsInGrid = Array.from(grid.querySelectorAll<HTMLImageElement>(".lightbox-img"));
+    if (imgsInGrid.length === 0) return;
+
+    const urls = imgsInGrid.map((img) => img.dataset.full || img.src);
+
+    imgsInGrid.forEach((img, i) => {
+      img.addEventListener("click", () => openLightbox(urls, i));
+    });
+  });
+
+  btnClose?.addEventListener("click", closeLightbox);
+  btnPrev?.addEventListener("click", () => showImage(-1));
+  btnNext?.addEventListener("click", () => showImage(1));
+
+  lightbox?.addEventListener("click", (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (lightbox?.classList.contains("hidden")) return;
+    if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") showImage(-1);
+    if (e.key === "ArrowRight") showImage(1);
+  });
+</script>
 <style is:global>
   .ql-align-center { text-align: center; }
   .ql-align-right { text-align: right; }
